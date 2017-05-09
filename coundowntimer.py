@@ -1,5 +1,10 @@
 #!/usr/bin/python
-"""This implements a graphical countdown timer"""
+"""This implements a graphical countdown timer
+
+Copyright 2017 A. Ottenheimer - use of this code requires this comment to
+be kept and aknowledgement sent to the author.
+License: GPL 3. See LICENSE file.
+"""
 
 import time
 #import threading
