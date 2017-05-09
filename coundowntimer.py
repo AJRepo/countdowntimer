@@ -23,29 +23,32 @@ def runclock(this_topwindow, this_canvas, arr_coord, start_time_seconds):
     percent_red = timeleft/3600
     extent_degrees_red = 360 * percent_red
     elapsedtime = 0
-    starttime = round(time.time(), 2)
+    starttime = time.time()
     percent_red = timeleft/3600
 
     while timeleft > 0: #not >= 0 because we don't want @0 to execute
         elapsedtime = time.time() - starttime
-        timeleft = round(start_time_seconds - elapsedtime, 0)
+        timeleft = start_time_seconds - elapsedtime
         if (timeleft > 300) and (timeleft%300 == 0):
             percent_red = timeleft/3600
             print "Minutes Remaining =", round(timeleft/60, 0)
-        elif timeleft < 301 and timeleft%60 == 0:
+            this_topwindow.after(1000)
+        elif timeleft < 301 and timeleft%60 == 0 and timeleft >= 60:
             percent_red = timeleft/3600
             print "Minutes Remaining =", round(timeleft/60, 0)
-        elif timeleft < 61:
+            this_topwindow.after(1000)
+        elif timeleft < 60:
             percent_red = timeleft/60
-            print "Seconds remaining =", timeleft
+            #print "Seconds remaining =", round(timeleft, 2)
+            this_topwindow.after(50)
         elif timeleft < 20:
             percent_red = timeleft/60
-            print "Seconds remaining =", timeleft
+            #print "Seconds remaining =", round(timeleft, 2)
+            this_topwindow.after(50)
 
         extent_degrees_red = 360 * percent_red
         this_canvas.create_oval(arr_coord, fill="white")
         this_canvas.create_arc(arr_coord, start=90, extent=-extent_degrees_red, fill="red")
-        this_topwindow.after(500)
         this_topwindow.update()
 
     #at t=0 set to an all white circle
