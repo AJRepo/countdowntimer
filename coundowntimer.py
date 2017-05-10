@@ -20,6 +20,7 @@ def runclock(this_topwindow, this_canvas, arr_coord, start_time_seconds):
     if add buttons later the might need to import threading and use t=ThreadClass?
     """
     timeleft = start_time_seconds
+    last_seconds_left = round(timeleft, 0)
     percent_red = timeleft/3600
     extent_degrees_red = 360 * percent_red
     elapsedtime = 0
@@ -29,6 +30,7 @@ def runclock(this_topwindow, this_canvas, arr_coord, start_time_seconds):
     while timeleft > 0: #not >= 0 because we don't want @0 to execute
         elapsedtime = time.time() - starttime
         timeleft = start_time_seconds - elapsedtime
+        seconds_left = round(timeleft, 0)
         if (timeleft > 300) and (timeleft%300 == 0):
             percent_red = timeleft/3600
             print "Minutes Remaining =", round(timeleft/60, 0)
@@ -37,19 +39,22 @@ def runclock(this_topwindow, this_canvas, arr_coord, start_time_seconds):
             percent_red = timeleft/3600
             print "Minutes Remaining =", round(timeleft/60, 0)
             this_topwindow.after(1000)
-        elif timeleft < 60:
+        elif timeleft <= 60 and timeleft >= 20:
             percent_red = timeleft/60
-            #print "Seconds remaining =", round(timeleft, 2)
-            this_topwindow.after(50)
+            if last_seconds_left != seconds_left and seconds_left%5 == 0:
+                print "Seconds remaining =", seconds_left
+            this_topwindow.after(100)
         elif timeleft < 20:
             percent_red = timeleft/60
-            #print "Seconds remaining =", round(timeleft, 2)
+            if last_seconds_left != seconds_left:
+                print "Seconds remaining =", seconds_left
             this_topwindow.after(50)
 
         extent_degrees_red = 360 * percent_red
         this_canvas.create_oval(arr_coord, fill="white")
         this_canvas.create_arc(arr_coord, start=90, extent=-extent_degrees_red, fill="red")
         this_topwindow.update()
+        last_seconds_left = seconds_left
 
     #at t=0 set to an all white circle
     this_canvas.create_oval(arr_coord, fill="white")
