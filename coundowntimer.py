@@ -25,17 +25,17 @@ def runclock(this_topwindow, this_canvas, arr_coord, start_time_seconds):
     extent_degrees_red = 360 * percent_red
     elapsedtime = 0
     starttime = time.time()
-    percent_red = timeleft/3600
 
     while timeleft > 0: #not >= 0 because we don't want @0 to execute
         elapsedtime = time.time() - starttime
         timeleft = start_time_seconds - elapsedtime
         seconds_left = round(timeleft, 0)
-        if (timeleft > 300) and (timeleft%300 == 0):
+
+        if (timeleft > 300) and (seconds_left%300 == 0):
             percent_red = timeleft/3600
             print "Minutes Remaining =", round(timeleft/60, 0)
             this_topwindow.after(1000)
-        elif timeleft < 301 and timeleft%60 == 0 and timeleft >= 60:
+        elif timeleft < 301 and seconds_left%60 == 0 and timeleft >= 60:
             percent_red = timeleft/3600
             print "Minutes Remaining =", round(timeleft/60, 0)
             this_topwindow.after(1000)
@@ -49,6 +49,9 @@ def runclock(this_topwindow, this_canvas, arr_coord, start_time_seconds):
             if last_seconds_left != seconds_left:
                 print "Seconds remaining =", seconds_left
             this_topwindow.after(50)
+        else:
+            percent_red = timeleft/3600
+            this_topwindow.after(1000)
 
         extent_degrees_red = 360 * percent_red
         this_canvas.create_oval(arr_coord, fill="white")
@@ -112,18 +115,19 @@ def main(argv):
     """main run the stuff"""
     #setup the defaults
     float_seconds = 0
-    float_minutes = 15
+    float_minutes = 16
     float_hours = 0
     int_xsize = 200
     int_ysize = 200
-    args = []
+    #If need args uncomment below and replace _ with args
+    #args = []
     opts = []
     try:
-        opts, args = getopt.getopt(argv,
-                                   "h:m:s:x:y:",
-                                   ["hours=", "minutes=", "seconds=",
-                                    "xsize=", "ysize="]
-                                  )
+        opts, _ = getopt.getopt(argv,
+                                "h:m:s:x:y:",
+                                ["hours=", "minutes=", "seconds=",
+                                 "xsize=", "ysize="]
+                               )
     except getopt.GetoptError:
         print "Usage:\n countdowntimer.py [-h <#>] [--hours=<#>] "
         print "[-m <#>] [--minutes <#>] [-s <#>] [--seconds <#>]\n"
