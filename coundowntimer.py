@@ -115,7 +115,7 @@ def main(argv):
     """main run the stuff"""
     #setup the defaults
     float_seconds = 0
-    float_minutes = 16
+    float_minutes = 15
     float_hours = 0
     int_xsize = 200
     int_ysize = 200
