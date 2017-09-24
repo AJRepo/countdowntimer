@@ -15,6 +15,9 @@ from Tkinter import Tk, Label, Canvas
 import sys
 import getopt
 
+KILLWINDOW = 0
+GLOBALWINDOW = Tk()
+
 def runclock(this_topwindow, this_canvas, arr_coord, start_time_seconds):
     """Run the countdown clock
     if add buttons later the might need to import threading and use t=ThreadClass?
@@ -26,7 +29,10 @@ def runclock(this_topwindow, this_canvas, arr_coord, start_time_seconds):
     elapsedtime = 0
     starttime = time.time()
 
-    while timeleft > 0: #not >= 0 because we don't want @0 to execute
+    #not >= 0 because we don't want @0 to execute
+    #while timeleft > 0 and this_topwindow.winfo_exists():  #doesn't work
+    #while timeleft > 0 and GLOBALWINDOW.winfo_exists():  #doesn't work
+    while timeleft > 0 and KILLWINDOW == 0:
         elapsedtime = time.time() - starttime
         timeleft = start_time_seconds - elapsedtime
         seconds_left = round(timeleft, 0)
@@ -60,8 +66,9 @@ def runclock(this_topwindow, this_canvas, arr_coord, start_time_seconds):
         last_seconds_left = seconds_left
 
     #at t=0 set to an all white circle
-    this_canvas.create_oval(arr_coord, fill="white")
-    this_topwindow.update()
+    if KILLWINDOW == 0:
+        this_canvas.create_oval(arr_coord, fill="white")
+        this_topwindow.update()
 
 def setuptopwindow(self, int_xsize, int_ysize):
     """setup the timer window"""
@@ -149,7 +156,11 @@ def main(argv):
     #print "H/M/S={0}/{1}/{2}".format(float_hours, float_minutes, float_seconds)
     #print "ARGS={0}".format(args)
 
-    topwindow = Tk()
+    topwindow = GLOBALWINDOW
+    #topwindow = Tk()
+    #Note: on_closing() actually calls the function on_closing (no paren) defines it.
+    #    so you can't pass arguments with WM_DELETE_WINDOW
+    topwindow.protocol("WM_DELETE_WINDOW", on_closing)
     widget_canvas = setuptopwindow(topwindow, int_xsize, int_ysize)
     arr_coord = 0, 0, int_xsize, int_ysize
 
@@ -160,8 +171,21 @@ def main(argv):
     start_time_seconds = float_hours*3600 + float_minutes*60 + float_seconds
     runclock(topwindow, widget_canvas, arr_coord, start_time_seconds)
 
-    topwindow.destroy()
+    if KILLWINDOW == 0:
+        topwindow.destroy()  #don't use .destroy() with WM_DELETE_WINDOW
+    else:
+        topwindow.quit()
+
     topwindow.mainloop()
+
+def on_closing():
+    """End the program gracefully if user clicks the X"""
+    global KILLWINDOW
+    KILLWINDOW = 1
+    GLOBALWINDOW.eval('::ttk::CancelRepeat')
+    GLOBALWINDOW.quit()
+    GLOBALWINDOW.destroy()
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
