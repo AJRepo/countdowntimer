@@ -18,7 +18,7 @@ import getopt
 KILLWINDOW = 0
 GLOBALWINDOW = Tk()
 
-def runclock(this_topwindow, this_canvas, arr_coord, start_time_seconds):
+def runclock(this_topwindow, this_canvas, arr_coord, start_time_seconds, quiet=0):
     """Run the countdown clock
     if add buttons later the might need to import threading and use t=ThreadClass?
     """
@@ -39,20 +39,22 @@ def runclock(this_topwindow, this_canvas, arr_coord, start_time_seconds):
 
         if (timeleft > 300) and (seconds_left%300 == 0):
             percent_red = timeleft/3600
-            print "Minutes Remaining =", round(timeleft/60, 0)
+            if quiet == 0:
+                print "Minutes Remaining =", round(timeleft/60, 0)
             this_topwindow.after(1000)
         elif timeleft < 301 and seconds_left%60 == 0 and timeleft >= 60:
             percent_red = timeleft/3600
-            print "Minutes Remaining =", round(timeleft/60, 0)
+            if quiet == 0:
+                print "Minutes Remaining =", round(timeleft/60, 0)
             this_topwindow.after(1000)
         elif timeleft <= 60 and timeleft >= 20:
             percent_red = timeleft/60
-            if last_seconds_left != seconds_left and seconds_left%5 == 0:
+            if quiet == 0 and last_seconds_left != seconds_left and seconds_left%5 == 0:
                 print "Seconds remaining =", seconds_left
             this_topwindow.after(100)
         elif timeleft < 20:
             percent_red = timeleft/60
-            if last_seconds_left != seconds_left:
+            if quiet == 0 and last_seconds_left != seconds_left:
                 print "Seconds remaining =", seconds_left
             this_topwindow.after(50)
         else:
@@ -121,6 +123,7 @@ def setuptopwindow(self, int_xsize, int_ysize):
 def main(argv):
     """main run the stuff"""
     #setup the defaults
+    quiet = 0
     float_seconds = 0
     float_minutes = 15
     float_hours = 0
@@ -131,14 +134,15 @@ def main(argv):
     opts = []
     try:
         opts, _ = getopt.getopt(argv,
-                                "h:m:s:x:y:",
-                                ["hours=", "minutes=", "seconds=",
+                                "qh:m:s:x:y:",
+                                ["quiet", "hours=", "minutes=", "seconds=",
                                  "xsize=", "ysize="]
                                )
     except getopt.GetoptError:
         print "Usage:\n countdowntimer.py [-h <#>] [--hours=<#>] "
         print "[-m <#>] [--minutes <#>] [-s <#>] [--seconds <#>]\n"
-        print "[-x <xwidth>] [-y <yheight>]"
+        print "[-x <xwidth>] [-y <yheight>]\n"
+        print "[-q or --quiet]\n"
         sys.exit(2)
     for opt, arg in opts:
         if opt in ("-h", "--hours"):
@@ -151,6 +155,8 @@ def main(argv):
             int_xsize = int(arg)
         elif opt in ("-y", "--ysize"):
             int_ysize = int(arg)
+        elif opt in ("-q", "--quiet"):
+            quiet = 1
 
     #debugging prints
     #print "H/M/S={0}/{1}/{2}".format(float_hours, float_minutes, float_seconds)
@@ -169,7 +175,7 @@ def main(argv):
 
     #The clock shows only red up to 60 minutes. But supports times > 60 minutes
     start_time_seconds = float_hours*3600 + float_minutes*60 + float_seconds
-    runclock(topwindow, widget_canvas, arr_coord, start_time_seconds)
+    runclock(topwindow, widget_canvas, arr_coord, start_time_seconds, quiet)
 
     if KILLWINDOW == 0:
         topwindow.destroy()  #don't use .destroy() with WM_DELETE_WINDOW
