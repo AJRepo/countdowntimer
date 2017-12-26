@@ -125,7 +125,7 @@ def main(argv):
     #setup the defaults
     quiet = 0
     float_seconds = 0
-    float_minutes = 15
+    float_minutes = 0
     float_hours = 0
     int_xsize = 200
     int_ysize = 200
@@ -158,6 +158,8 @@ def main(argv):
         elif opt in ("-q", "--quiet"):
             quiet = 1
 
+    if float_hours == 0 and float_minutes == 0 and float_seconds == 0:
+        float_minutes = 15
     #debugging prints
     #print "H/M/S={0}/{1}/{2}".format(float_hours, float_minutes, float_seconds)
     #print "ARGS={0}".format(args)
