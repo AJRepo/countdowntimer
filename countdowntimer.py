@@ -18,7 +18,23 @@ import getopt
 KILLWINDOW = 0
 GLOBALWINDOW = Tk()
 
-def runclock(this_topwindow, this_canvas, arr_coord, start_time_seconds, quiet=0):
+def setup_lables(this_widget_array, timeleft):
+    """set the labels for the clock
+    """
+    top_label = int(timeleft/3600)*60
+    #in python int() always rounds down
+    this_widget_array[1].config(text=top_label)
+    this_widget_array[2].config(text=top_label+15)
+    this_widget_array[3].config(text=top_label+30)
+    this_widget_array[4].config(text=top_label+45)
+
+def print_m(this_seconds, quiet=0):
+    """print minutes remaining
+    """
+    if quiet == 0: #if not quiet
+        print "Minutes Remaining =", round(this_seconds/60, 0)
+
+def runclock(this_topwindow, this_widget_array, arr_coord, start_time_seconds, quiet=0):
     """Run the countdown clock
     if add buttons later the might need to import threading and use t=ThreadClass?
     """
@@ -36,16 +52,21 @@ def runclock(this_topwindow, this_canvas, arr_coord, start_time_seconds, quiet=0
         elapsedtime = time.time() - starttime
         timeleft = start_time_seconds - elapsedtime
         seconds_left = round(timeleft, 0)
+        setup_lables(this_widget_array, timeleft)
 
-        if (timeleft > 300) and (seconds_left%300 == 0):
+        #percent red can be > 100% but it is normalized to 360 deg as an extent
+        if (timeleft > 3599) and (seconds_left%3600 == 0):
             percent_red = timeleft/3600
-            if quiet == 0:
-                print "Minutes Remaining =", round(timeleft/60, 0)
+            setup_lables(this_widget_array, timeleft)
+            print_m(timeleft, quiet)
+            this_topwindow.after(1000)
+        elif (timeleft > 300) and (seconds_left%300 == 0):
+            percent_red = timeleft/3600
+            print_m(timeleft, quiet)
             this_topwindow.after(1000)
         elif timeleft < 301 and seconds_left%60 == 0 and timeleft >= 60:
             percent_red = timeleft/3600
-            if quiet == 0:
-                print "Minutes Remaining =", round(timeleft/60, 0)
+            print_m(timeleft, quiet)
             this_topwindow.after(1000)
         elif timeleft <= 60 and timeleft >= 20:
             percent_red = timeleft/60
@@ -62,14 +83,15 @@ def runclock(this_topwindow, this_canvas, arr_coord, start_time_seconds, quiet=0
             this_topwindow.after(1000)
 
         extent_degrees_red = 360 * percent_red
-        this_canvas.create_oval(arr_coord, fill="white")
-        this_canvas.create_arc(arr_coord, start=90, extent=-extent_degrees_red, fill="red")
+        this_widget_array[0].create_oval(arr_coord, fill="white")
+        this_widget_array[0].create_arc(arr_coord, start=90, extent=-extent_degrees_red, fill="red")
+
         this_topwindow.update()
         last_seconds_left = seconds_left
 
     #at t=0 set to an all white circle
     if KILLWINDOW == 0:
-        this_canvas.create_oval(arr_coord, fill="white")
+        this_widget_array[0].create_oval(arr_coord, fill="white")
         this_topwindow.update()
 
 def setuptopwindow(self, int_xsize, int_ysize):
@@ -118,7 +140,7 @@ def setuptopwindow(self, int_xsize, int_ysize):
     '''
     widget_c.create_oval(0, 0, int_xsize, int_ysize, fill="white", tag="base")
 
-    return widget_c
+    return widget_c, widget_0, widget_15, widget_30, widget_45
 
 def main(argv):
     """main run the stuff"""
@@ -169,7 +191,8 @@ def main(argv):
     #Note: on_closing() actually calls the function on_closing (no paren) defines it.
     #    so you can't pass arguments with WM_DELETE_WINDOW
     topwindow.protocol("WM_DELETE_WINDOW", on_closing)
-    widget_canvas = setuptopwindow(topwindow, int_xsize, int_ysize)
+    widget_array = []
+    widget_array = setuptopwindow(topwindow, int_xsize, int_ysize)
     arr_coord = 0, 0, int_xsize, int_ysize
 
     #Todo: move this into threaded function
@@ -177,7 +200,7 @@ def main(argv):
 
     #The clock shows only red up to 60 minutes. But supports times > 60 minutes
     start_time_seconds = float_hours*3600 + float_minutes*60 + float_seconds
-    runclock(topwindow, widget_canvas, arr_coord, start_time_seconds, quiet)
+    runclock(topwindow, widget_array, arr_coord, start_time_seconds, quiet)
 
     if KILLWINDOW == 0:
         topwindow.destroy()  #don't use .destroy() with WM_DELETE_WINDOW
