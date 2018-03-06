@@ -40,10 +40,11 @@ def runclock(this_topwindow, this_widget_array, arr_coord, start_time_seconds, q
     """
     timeleft = start_time_seconds
     last_seconds_left = round(timeleft, 0)
-    percent_red = timeleft/3600
-    extent_degrees_red = 360 * percent_red
+    percent_left = timeleft/3600
+    extent_degrees_left = 360 * percent_left
     elapsedtime = 0
     starttime = time.time()
+    this_time_left_color = this_widget_array[5]
 
     #not >= 0 because we don't want @0 to execute
     #while timeleft > 0 and this_topwindow.winfo_exists():  #doesn't work
@@ -56,35 +57,38 @@ def runclock(this_topwindow, this_widget_array, arr_coord, start_time_seconds, q
 
         #percent red can be > 100% but it is normalized to 360 deg as an extent
         if (timeleft > 3599) and (seconds_left%3600 == 0):
-            percent_red = timeleft/3600
+            percent_left = timeleft/3600
             setup_lables(this_widget_array, timeleft)
             print_m(timeleft, quiet)
             this_topwindow.after(1000)
         elif (timeleft > 300) and (seconds_left%300 == 0):
-            percent_red = timeleft/3600
+            percent_left = timeleft/3600
             print_m(timeleft, quiet)
             this_topwindow.after(1000)
         elif timeleft < 301 and seconds_left%60 == 0 and timeleft >= 60:
-            percent_red = timeleft/3600
+            percent_left = timeleft/3600
             print_m(timeleft, quiet)
             this_topwindow.after(1000)
         elif timeleft <= 60 and timeleft >= 20:
-            percent_red = timeleft/60
+            percent_left = timeleft/60
             if quiet == 0 and last_seconds_left != seconds_left and seconds_left%5 == 0:
                 print "Seconds remaining =", seconds_left
             this_topwindow.after(100)
         elif timeleft < 20:
-            percent_red = timeleft/60
+            percent_left = timeleft/60
             if quiet == 0 and last_seconds_left != seconds_left:
                 print "Seconds remaining =", seconds_left
             this_topwindow.after(50)
         else:
-            percent_red = timeleft/3600
+            percent_left = timeleft/3600
             this_topwindow.after(1000)
 
-        extent_degrees_red = 360 * percent_red
+        extent_degrees_left = 360 * percent_left
         this_widget_array[0].create_oval(arr_coord, fill="white")
-        this_widget_array[0].create_arc(arr_coord, start=90, extent=-extent_degrees_red, fill="red")
+        this_widget_array[0].create_arc(arr_coord,
+                                        start=90,
+                                        extent=-extent_degrees_left,
+                                        fill=this_time_left_color)
 
         this_topwindow.update()
         last_seconds_left = seconds_left
@@ -94,7 +98,7 @@ def runclock(this_topwindow, this_widget_array, arr_coord, start_time_seconds, q
         this_widget_array[0].create_oval(arr_coord, fill="white")
         this_topwindow.update()
 
-def setuptopwindow(self, int_xsize, int_ysize):
+def setuptopwindow(self, int_xsize, int_ysize, time_left_color):
     """setup the timer window"""
     self.wm_attributes("-topmost", 1)
     self.title("Graphical Countdown Timer")
@@ -140,7 +144,7 @@ def setuptopwindow(self, int_xsize, int_ysize):
     '''
     widget_c.create_oval(0, 0, int_xsize, int_ysize, fill="white", tag="base")
 
-    return widget_c, widget_0, widget_15, widget_30, widget_45
+    return widget_c, widget_0, widget_15, widget_30, widget_45, time_left_color
 
 def main(argv):
     """main run the stuff"""
@@ -151,20 +155,22 @@ def main(argv):
     float_hours = 0
     int_xsize = 200
     int_ysize = 200
+    time_left_color = "red"
     #If need args uncomment below and replace _ with args
     #args = []
     opts = []
     try:
         opts, _ = getopt.getopt(argv,
-                                "qh:m:s:x:y:",
+                                "qh:m:s:x:y:c:",
                                 ["quiet", "hours=", "minutes=", "seconds=",
-                                 "xsize=", "ysize="]
+                                 "xsize=", "ysize=", "color="]
                                )
     except getopt.GetoptError:
         print "Usage:\n countdowntimer.py [-h <#>] [--hours=<#>] "
         print "[-m <#>] [--minutes <#>] [-s <#>] [--seconds <#>]\n"
         print "[-x <xwidth>] [-y <yheight>]\n"
         print "[-q or --quiet]\n"
+        print "[--color]\n"
         sys.exit(2)
     for opt, arg in opts:
         if opt in ("-h", "--hours"):
@@ -175,6 +181,8 @@ def main(argv):
             float_seconds = float(arg)
         elif opt in ("-x", "--xsize"):
             int_xsize = int(arg)
+        elif opt in ("-c", "--color"):
+            time_left_color = arg
         elif opt in ("-y", "--ysize"):
             int_ysize = int(arg)
         elif opt in ("-q", "--quiet"):
@@ -192,13 +200,13 @@ def main(argv):
     #    so you can't pass arguments with WM_DELETE_WINDOW
     topwindow.protocol("WM_DELETE_WINDOW", on_closing)
     widget_array = []
-    widget_array = setuptopwindow(topwindow, int_xsize, int_ysize)
+    widget_array = setuptopwindow(topwindow, int_xsize, int_ysize, time_left_color)
     arr_coord = 0, 0, int_xsize, int_ysize
 
     #Todo: move this into threaded function
     #def X...., obj_thread = threading.Thread(target=X)
 
-    #The clock shows only red up to 60 minutes. But supports times > 60 minutes
+    #The clock shows only time left up to 60 minutes. But supports times > 60 minutes
     start_time_seconds = float_hours*3600 + float_minutes*60 + float_seconds
     runclock(topwindow, widget_array, arr_coord, start_time_seconds, quiet)
 
