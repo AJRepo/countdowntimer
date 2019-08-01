@@ -32,9 +32,9 @@ def print_m(this_seconds, quiet=0):
     """print minutes remaining
     """
     if quiet == 0: #if not quiet
-        print "Minutes Remaining =", round(this_seconds/60, 0)
+        print("Minutes Remaining =" + str(round(this_seconds/60, 0)))
 
-def runclock(this_topwindow, this_widget_array, arr_coord, start_time_seconds, quiet=0):
+def runclock(this_topwindow, this_widget_array, arr_coord, start_time_seconds, quiet=0, terminal_beep=0):
     """Run the countdown clock
     if add buttons later the might need to import threading and use t=ThreadClass?
     """
@@ -72,12 +72,12 @@ def runclock(this_topwindow, this_widget_array, arr_coord, start_time_seconds, q
         elif timeleft <= 60 and timeleft >= 20:
             percent_left = timeleft/60
             if quiet == 0 and last_seconds_left != seconds_left and seconds_left%5 == 0:
-                print "Seconds remaining =", seconds_left
+                print("Seconds remaining =" + str(seconds_left))
             this_topwindow.after(100)
         elif timeleft < 20:
             percent_left = timeleft/60
             if quiet == 0 and last_seconds_left != seconds_left:
-                print "Seconds remaining =", seconds_left
+                print("Seconds remaining =" + str(seconds_left))
             this_topwindow.after(50)
         else:
             percent_left = timeleft/3600
@@ -92,6 +92,11 @@ def runclock(this_topwindow, this_widget_array, arr_coord, start_time_seconds, q
 
         this_topwindow.update()
         last_seconds_left = seconds_left
+
+    if terminal_beep == 1:
+        for _ in range(1,10):
+            print('\a')
+            time.sleep(1)
 
     #at t=0 set to an all white circle
     if KILLWINDOW == 0:
@@ -150,6 +155,7 @@ def main(argv):
     """main run the stuff"""
     #setup the defaults
     quiet = 0
+    terminal_beep = 0
     float_seconds = 0
     float_minutes = 0
     float_hours = 0
@@ -161,16 +167,17 @@ def main(argv):
     opts = []
     try:
         opts, _ = getopt.getopt(argv,
-                                "qh:m:s:x:y:c:",
-                                ["quiet", "hours=", "minutes=", "seconds=",
+                                "tqh:m:s:x:y:c:",
+                                ["terminal_beep", "quiet", "hours=", "minutes=", "seconds=",
                                  "xsize=", "ysize=", "color="]
                                )
     except getopt.GetoptError:
-        print "Usage:\n countdowntimer.py [-h <#>] [--hours=<#>] "
-        print "[-m <#>] [--minutes <#>] [-s <#>] [--seconds <#>]\n"
-        print "[-x <xwidth>] [-y <yheight>]\n"
-        print "[-q or --quiet]\n"
-        print "[--color]\n"
+        print("Usage:\n countdowntimer.py [-h <#>] [--hours=<#>] ")
+        print("[-m <#>] [--minutes <#>] [-s <#>] [--seconds <#>]\n")
+        print("[-x <xwidth>] [-y <yheight>]\n")
+        print("[-q or --quiet]\n")
+        print("[-t or --terminal_beep]\n")
+        print("[--color]\n")
         sys.exit(2)
     for opt, arg in opts:
         if opt in ("-h", "--hours"):
@@ -185,6 +192,8 @@ def main(argv):
             time_left_color = arg
         elif opt in ("-y", "--ysize"):
             int_ysize = int(arg)
+        elif opt in ("-t", "--terminal_beep"):
+            terminal_beep = 1
         elif opt in ("-q", "--quiet"):
             quiet = 1
 
@@ -208,7 +217,7 @@ def main(argv):
 
     #The clock shows only time left up to 60 minutes. But supports times > 60 minutes
     start_time_seconds = float_hours*3600 + float_minutes*60 + float_seconds
-    runclock(topwindow, widget_array, arr_coord, start_time_seconds, quiet)
+    runclock(topwindow, widget_array, arr_coord, start_time_seconds, quiet, terminal_beep)
 
     if KILLWINDOW == 0:
         topwindow.destroy()  #don't use .destroy() with WM_DELETE_WINDOW
