@@ -159,8 +159,8 @@ def main(argv):
     float_seconds = 0
     float_minutes = 0
     float_hours = 0
-    int_xsize = 200
-    int_ysize = 200
+    int_xsize = 0
+    int_ysize = 0
     time_left_color = "red"
     #If need args uncomment below and replace _ with args
     #args = []
@@ -187,15 +187,38 @@ def main(argv):
         elif opt in ("-s", "--seconds"):
             float_seconds = float(arg)
         elif opt in ("-x", "--xsize"):
-            int_xsize = int(arg)
+            if arg == '%':
+                width_px = .5 * GLOBALWINDOW.winfo_screenwidth()
+                int_xsize = int(width_px)
+            else:
+                int_xsize = int(arg)
         elif opt in ("-c", "--color"):
             time_left_color = arg
         elif opt in ("-y", "--ysize"):
-            int_ysize = int(arg)
+            if arg == '%':
+                height_px = .5 * GLOBALWINDOW.winfo_screenheight()
+                int_ysize = int(height_px)
+            else:
+                int_ysize = int(arg)
         elif opt in ("-t", "--terminal_beep"):
             terminal_beep = 1
         elif opt in ("-q", "--quiet"):
             quiet = 1
+
+    #Set xsize.
+    if int_xsize == 0:
+        if int_ysize != 0: 
+            int_xsize = int_ysize
+        else:
+            int_xsize = 200
+    #Set Ysize. In theory you'd never need fallback = 200 since xsize is set above
+    if int_ysize == 0:
+        if int_xsize != 0: 
+            int_ysize = int_xsize
+        else:
+            int_ysize = 200
+      
+
 
     if float_hours == 0 and float_minutes == 0 and float_seconds == 0:
         float_minutes = 15
