@@ -172,12 +172,16 @@ def main(argv):
                                  "xsize=", "ysize=", "color="]
                                )
     except getopt.GetoptError:
-        print("Usage:\n countdowntimer.py [-h <#>] [--hours=<#>] ")
-        print("[-m <#>] [--minutes <#>] [-s <#>] [--seconds <#>]\n")
-        print("[-x <xwidth>] [-y <yheight>]\n")
-        print("[-q or --quiet]\n")
-        print("[-t or --terminal_beep]\n")
-        print("[--color <color>] [-c <color>]\n")
+        print("Usage:\n countdowntimer.py [Arguments]\n")
+        print("Arguments:")
+        print("  [--color=<color>] [-c <color>]")
+        print("  [--help ] Print Help (this message) and exit")
+        print("  [-h <#>] [--hours=<#>]")
+        print("  [-m <#>] [--minutes <#>]")
+        print("  [-s <#>] [--seconds <#>]")
+        print("  [-q or --quiet]")
+        print("  [-t or --terminal_beep]")
+        print("  [-x <xwidth>] [-y <yheight>]")
         sys.exit(2)
     for opt, arg in opts:
         if opt in ("-h", "--hours"):
