@@ -177,7 +177,7 @@ def main(argv):
         print("[-x <xwidth>] [-y <yheight>]\n")
         print("[-q or --quiet]\n")
         print("[-t or --terminal_beep]\n")
-        print("[--color]\n")
+        print("[--color <color>] [-c <color>]\n")
         sys.exit(2)
     for opt, arg in opts:
         if opt in ("-h", "--hours"):
