@@ -34,11 +34,11 @@ def print_m(this_seconds, quiet=0):
     if quiet == 0: #if not quiet
         print("Minutes Remaining =" + str(round(this_seconds/60, 0)))
 
-def runclock(this_topwindow, this_widget_array, arr_coord, start_time_seconds, quiet=0, terminal_beep=0):
+def runclock(this_topwindow, this_widget_array, arr_coord, start_seconds, quiet=0, terminal_beep=0):
     """Run the countdown clock
     if add buttons later the might need to import threading and use t=ThreadClass?
     """
-    timeleft = start_time_seconds
+    timeleft = start_seconds
     last_seconds_left = round(timeleft, 0)
     percent_left = timeleft/3600
     extent_degrees_left = 360 * percent_left
@@ -51,7 +51,7 @@ def runclock(this_topwindow, this_widget_array, arr_coord, start_time_seconds, q
     #while timeleft > 0 and GLOBALWINDOW.winfo_exists():  #doesn't work
     while timeleft > 0 and KILLWINDOW == 0:
         elapsedtime = time.time() - starttime
-        timeleft = start_time_seconds - elapsedtime
+        timeleft = start_seconds - elapsedtime
         seconds_left = round(timeleft, 0)
         setup_lables(this_widget_array, timeleft)
 
@@ -243,8 +243,8 @@ def main(argv):
     #def X...., obj_thread = threading.Thread(target=X)
 
     #The clock shows only time left up to 60 minutes. But supports times > 60 minutes
-    start_time_seconds = float_hours*3600 + float_minutes*60 + float_seconds
-    runclock(topwindow, widget_array, arr_coord, start_time_seconds, quiet, terminal_beep)
+    start_seconds = float_hours*3600 + float_minutes*60 + float_seconds
+    runclock(topwindow, widget_array, arr_coord, start_seconds, quiet, terminal_beep)
 
     if KILLWINDOW == 0:
         topwindow.destroy()  #don't use .destroy() with WM_DELETE_WINDOW
