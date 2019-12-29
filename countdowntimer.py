@@ -65,11 +65,11 @@ def runclock(this_topwindow, this_widget_array, arr_coord, start_time_seconds, q
             percent_left = timeleft/3600
             print_m(timeleft, quiet)
             this_topwindow.after(1000)
-        elif timeleft < 301 and seconds_left%60 == 0 and timeleft >= 60:
+        elif 60 <= timeleft < 301 and seconds_left%60 == 0:
             percent_left = timeleft/3600
             print_m(timeleft, quiet)
             this_topwindow.after(1000)
-        elif timeleft <= 60 and timeleft >= 20:
+        elif 20 <= timeleft <= 60:
             percent_left = timeleft/60
             if quiet == 0 and last_seconds_left != seconds_left and seconds_left%5 == 0:
                 print("Seconds remaining =" + str(seconds_left))
@@ -94,7 +94,7 @@ def runclock(this_topwindow, this_widget_array, arr_coord, start_time_seconds, q
         last_seconds_left = seconds_left
 
     if terminal_beep == 1:
-        for _ in range(1,10):
+        for _ in range(1, 10):
             print('\a')
             time.sleep(1)
 
@@ -175,11 +175,11 @@ def main(argv):
         print("Usage:\n countdowntimer.py [Arguments]\n")
         print("Arguments:")
         print("  [--color=<color>] [-c <color>]")
-        print("  [--help ] Print Help (this message) and exit")
+        print("  [--help ]   Print Help (this message) and exit")
         print("  [-h <#>] [--hours=<#>]")
         print("  [-m <#>] [--minutes <#>]")
         print("  [-s <#>] [--seconds <#>]")
-        print("  [-q or --quiet]")
+        print("  [-q or --quiet]  Do not print time left in terminal")
         print("  [-t or --terminal_beep]")
         print("  [-x <xwidth>] [-y <yheight>]")
         sys.exit(2)
@@ -211,17 +211,17 @@ def main(argv):
 
     #Set xsize.
     if int_xsize == 0:
-        if int_ysize != 0: 
+        if int_ysize != 0:
             int_xsize = int_ysize
         else:
             int_xsize = 200
     #Set Ysize. In theory you'd never need fallback = 200 since xsize is set above
     if int_ysize == 0:
-        if int_xsize != 0: 
+        if int_xsize != 0:
             int_ysize = int_xsize
         else:
             int_ysize = 200
-      
+
 
 
     if float_hours == 0 and float_minutes == 0 and float_seconds == 0:
