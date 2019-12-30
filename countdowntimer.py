@@ -132,7 +132,7 @@ def setuptopwindow(self, int_xsize, int_ysize, time_left_color):
     widget_label1 = Label(self, text="Sprint time:")
     widget_label1.grid(row=1)
 
-    string_minutes = StringVar(master=self, value=float_minutes)
+    string_minutes = StringVar(master=self, value=dict_time['minutes'])
     widget_time_minutes = Entry(self, width=3, textvariable=string_minutes)
     widget_time_minutes.grid(row=1, column=1)
 
@@ -156,9 +156,7 @@ def main(argv):
     #setup the defaults
     quiet = 0
     terminal_beep = 0
-    float_seconds = 0
-    float_minutes = 0
-    float_hours = 0
+    dict_time = {'seconds': 0, 'minutes': 0, 'hours': 0}
     int_xsize = 0
     int_ysize = 0
     time_left_color = "red"
@@ -185,11 +183,11 @@ def main(argv):
         sys.exit(2)
     for opt, arg in opts:
         if opt in ("-h", "--hours"):
-            float_hours = float(arg)
+            dict_time['hours'] = float(arg)
         elif opt in ("-m", "--minutes"):
-            float_minutes = float(arg)
+            dict_time['minutes'] = float(arg)
         elif opt in ("-s", "--seconds"):
-            float_seconds = float(arg)
+            dict_time['seconds'] = float(arg)
         elif opt in ("-x", "--xsize"):
             if arg == '%':
                 width_px = .5 * GLOBALWINDOW.winfo_screenwidth()
@@ -224,10 +222,7 @@ def main(argv):
 
 
 
-    if float_hours == 0 and float_minutes == 0 and float_seconds == 0:
-        float_minutes = 15
     #debugging prints
-    #print "H/M/S={0}/{1}/{2}".format(float_hours, float_minutes, float_seconds)
     #print "ARGS={0}".format(args)
 
     topwindow = GLOBALWINDOW
@@ -235,16 +230,23 @@ def main(argv):
     #Note: on_closing() actually calls the function on_closing (no paren) defines it.
     #    so you can't pass arguments with WM_DELETE_WINDOW
     topwindow.protocol("WM_DELETE_WINDOW", on_closing)
-    widget_array = []
-    widget_array = setuptopwindow(topwindow, int_xsize, int_ysize, time_left_color)
-    arr_coord = 0, 0, int_xsize, int_ysize
+
+    #widget_array = []
+    #widget_array = setuptopwindow(topwindow, int_xsize, int_ysize, time_left_color)
+    #arr_coord = 0, 0, int_xsize, int_ysize
 
     #Todo: move this into threaded function
     #def X...., obj_thread = threading.Thread(target=X)
 
     #The clock shows only time left up to 60 minutes. But supports times > 60 minutes
-    start_seconds = float_hours*3600 + float_minutes*60 + float_seconds
-    runclock(topwindow, widget_array, arr_coord, start_seconds, quiet, terminal_beep)
+    start_seconds = set_start_seconds(dict_time)
+
+    runclock(topwindow,
+             setuptopwindow(topwindow, int_xsize, int_ysize, time_left_color), #widget_array
+             (0, 0, int_xsize, int_ysize), #arr_cord
+             start_seconds,
+             quiet,
+             terminal_beep)
 
     if KILLWINDOW == 0:
         topwindow.destroy()  #don't use .destroy() with WM_DELETE_WINDOW
@@ -252,6 +254,13 @@ def main(argv):
         topwindow.quit()
 
     topwindow.mainloop()
+
+def set_start_seconds(dict_time):
+    """Convert start time parameters to seconds"""
+    if dict_time['hours'] == 0 and dict_time['minutes'] == 0 and dict_time['seconds'] == 0:
+        dict_time['minutes'] = 15
+    start_seconds = dict_time['hours']*3600 + dict_time['minutes']*60 + dict_time['seconds']
+    return start_seconds
 
 def on_closing():
     """End the program gracefully if user clicks the X"""
