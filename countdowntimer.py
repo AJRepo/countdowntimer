@@ -175,11 +175,12 @@ def main(argv):
         print("  [--color=<color>] [-c <color>]")
         print("  [--help ]   Print Help (this message) and exit")
         print("  [-h <#>] [--hours=<#>]")
-        print("  [-m <#>] [--minutes <#>]")
-        print("  [-s <#>] [--seconds <#>]")
+        print("  [-m <#>] [--minutes=<#>]")
+        print("  [-s <#>] [--secondss=<#>]")
         print("  [-q or --quiet]  Do not print time left in terminal")
         print("  [-t or --terminal_beep]")
-        print("  [-x <xwidth>] [-y <yheight>]")
+        print("  [-x <xwidth>] [--xsize=<xwidth>]")
+        print("  [-y <yheight>] [--ysize=<ywidth>]")
         sys.exit(2)
 
     for opt, arg in opts:
@@ -236,12 +237,11 @@ def main(argv):
     #def X...., obj_thread = threading.Thread(target=X)
 
     #The clock shows only time left up to 60 minutes. But supports times > 60 minutes
-    start_seconds = set_start_seconds(dict_time)
 
     runclock(topwindow,
              setuptopwindow(topwindow, int_xsize, int_ysize, time_left_color), #widget_array
              (0, 0, int_xsize, int_ysize), #arr_cord
-             start_seconds,
+             set_start_seconds(dict_time), #start_seconds
              quiet,
              terminal_beep)
 
