@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 """This implements a graphical countdown timer
 
 Copyright 2017 A. Ottenheimer - use of this code requires this comment to
@@ -8,9 +8,9 @@ License: GPL 3. See LICENSE file.
 
 import time
 #import threading
-from Tkinter import Tk, Label, Canvas
+from tkinter import Tk, Label, Canvas, Button, Entry
 #If add buttons do this
-#from Tkinter import Button, Entry
+#from tkinter import Button, Entry
 #import tkMessageBox
 import sys
 import getopt
@@ -18,7 +18,7 @@ import getopt
 KILLWINDOW = 0
 GLOBALWINDOW = Tk()
 
-def setup_lables(this_widget_array, timeleft):
+def setup_labels(this_widget_array, timeleft):
     """set the labels for the clock
     """
     top_label = int(timeleft/3600)*60
@@ -34,7 +34,7 @@ def print_m(this_seconds, quiet=0):
     if quiet == 0: #if not quiet
         print("Minutes Remaining =" + str(round(this_seconds/60, 0)))
 
-def runclock(this_topwindow, this_widget_array, arr_coord, start_seconds, quiet=0, terminal_beep=0):
+def runclock(this_topwindow, this_widget_array, arr_coord, start_seconds, clock_features):
     """Run the countdown clock
     if add buttons later the might need to import threading and use t=ThreadClass?
     """
@@ -44,7 +44,6 @@ def runclock(this_topwindow, this_widget_array, arr_coord, start_seconds, quiet=
     extent_degrees_left = 360 * percent_left
     elapsedtime = 0
     starttime = time.time()
-    this_time_left_color = this_widget_array[5]
 
     #not >= 0 because we don't want @0 to execute
     #while timeleft > 0 and this_topwindow.winfo_exists():  #doesn't work
@@ -53,30 +52,31 @@ def runclock(this_topwindow, this_widget_array, arr_coord, start_seconds, quiet=
         elapsedtime = time.time() - starttime
         timeleft = start_seconds - elapsedtime
         seconds_left = round(timeleft, 0)
-        setup_lables(this_widget_array, timeleft)
+        setup_labels(this_widget_array, timeleft)
 
         #percent red can be > 100% but it is normalized to 360 deg as an extent
         if (timeleft > 3599) and (seconds_left%3600 == 0):
             percent_left = timeleft/3600
-            setup_lables(this_widget_array, timeleft)
-            print_m(timeleft, quiet)
+            setup_labels(this_widget_array, timeleft)
+            print_m(timeleft, clock_features['quiet'])
             this_topwindow.after(1000)
         elif (timeleft > 300) and (seconds_left%300 == 0):
             percent_left = timeleft/3600
-            print_m(timeleft, quiet)
+            print_m(timeleft, clock_features['quiet'])
             this_topwindow.after(1000)
         elif 60 <= timeleft < 301 and seconds_left%60 == 0:
             percent_left = timeleft/3600
-            print_m(timeleft, quiet)
+            print_m(timeleft, clock_features['quiet'])
             this_topwindow.after(1000)
         elif 20 <= timeleft <= 60:
             percent_left = timeleft/60
-            if quiet == 0 and last_seconds_left != seconds_left and seconds_left%5 == 0:
+            if clock_features['quiet'] == 0 and last_seconds_left != seconds_left\
+                                            and seconds_left%5 == 0:
                 print("Seconds remaining =" + str(seconds_left))
             this_topwindow.after(100)
         elif timeleft < 20:
             percent_left = timeleft/60
-            if quiet == 0 and last_seconds_left != seconds_left:
+            if clock_features['quiet'] == 0 and last_seconds_left != seconds_left:
                 print("Seconds remaining =" + str(seconds_left))
             this_topwindow.after(50)
         else:
@@ -88,12 +88,12 @@ def runclock(this_topwindow, this_widget_array, arr_coord, start_seconds, quiet=
         this_widget_array[0].create_arc(arr_coord,
                                         start=90,
                                         extent=-extent_degrees_left,
-                                        fill=this_time_left_color)
+                                        fill=clock_features['time_left_color'])
 
         this_topwindow.update()
         last_seconds_left = seconds_left
 
-    if terminal_beep == 1:
+    if clock_features['terminal_beep'] == 1:
         for _ in range(1, 10):
             print('\a')
             time.sleep(1)
@@ -103,8 +103,9 @@ def runclock(this_topwindow, this_widget_array, arr_coord, start_seconds, quiet=
         this_widget_array[0].create_oval(arr_coord, fill="white")
         this_topwindow.update()
 
-def setuptopwindow(self, int_xsize, int_ysize, time_left_color):
-    """setup the timer window"""
+def setup_topwindow(self, int_xsize, int_ysize, argv):
+    """setup the timer window
+    Starts at row=3 (top of clock) and goes to row=5(bottom of clock)"""
     self.wm_attributes("-topmost", 1)
     self.title("Graphical Countdown Timer")
 
@@ -120,11 +121,18 @@ def setuptopwindow(self, int_xsize, int_ysize, time_left_color):
     widget_c = Canvas(self, height=int_ysize, width=int_xsize)
     widget_c.grid(row=5, column=1)
 
-    #todo: add buttons/fields interface for changing times, start/stop
-    '''
-    widget_label = Label(self, text="Break time:")
-    widget_label.grid(row=0)
+    #add buttons/fields interface for changing times, start/stop
+    widget_buttons = Button(self, text="Restart", command=lambda: main(argv))
+    widget_buttons.grid(row=7, column=0)
+    widget_buttons = Button(self, text="Pause", command=lambda: main(argv))
+    widget_buttons.grid(row=7, column=1)
+    widget_buttons = Button(self, text="Adj. Time", command=lambda: main(argv))
+    widget_buttons.grid(row=7, column=3)
 
+    #widget_label = Label(self, text="Break time:")
+    #widget_label.grid(row=3)
+
+    '''
     string_delay = StringVar(master=self, value="1")
     widget_delay = Entry(self, width=3, textvariable=string_delay)
     widget_delay.grid(row=0, column=1)
@@ -149,7 +157,7 @@ def setuptopwindow(self, int_xsize, int_ysize, time_left_color):
     '''
     widget_c.create_oval(0, 0, int_xsize, int_ysize, fill="white", tag="base")
 
-    return widget_c, widget_0, widget_15, widget_30, widget_45, time_left_color
+    return widget_c, widget_0, widget_15, widget_30, widget_45
 
 def main(argv):
     """main run the stuff"""
@@ -160,7 +168,6 @@ def main(argv):
     int_xsize = 0
     int_ysize = 0
     time_left_color = "red"
-
     int_xsize, int_ysize, quiet, terminal_beep, time_left_color, dict_time = get_arguments(argv)
     #Set xsize.
     if int_xsize == 0 and int_ysize != 0:
@@ -183,7 +190,7 @@ def main(argv):
     topwindow.protocol("WM_DELETE_WINDOW", on_closing)
 
     #widget_array = []
-    #widget_array = setuptopwindow(topwindow, int_xsize, int_ysize, time_left_color)
+    #widget_array = setup_top_window(topwindow, int_xsize, int_ysize, time_left_color)
     #arr_coord = 0, 0, int_xsize, int_ysize
 
     #Todo: move this into threaded function
@@ -192,11 +199,11 @@ def main(argv):
     #The clock shows only time left up to 60 minutes. But supports times > 60 minutes
 
     runclock(topwindow,
-             setuptopwindow(topwindow, int_xsize, int_ysize, time_left_color), #widget_array
+             setup_topwindow(topwindow, int_xsize, int_ysize, argv), #widget_array
              (0, 0, int_xsize, int_ysize), #arr_cord
              set_start_seconds(dict_time), #start_seconds
-             quiet,
-             terminal_beep)
+             {'quiet': quiet, 'terminal_beep': terminal_beep, 'time_left_color': time_left_color}
+             )
 
     if KILLWINDOW == 0:
         topwindow.destroy()  #don't use .destroy() with WM_DELETE_WINDOW
