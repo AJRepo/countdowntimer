@@ -160,55 +160,8 @@ def main(argv):
     int_xsize = 0
     int_ysize = 0
     time_left_color = "red"
-    #If need args uncomment below and replace _ with args
-    #args = []
-    opts = []
-    try:
-        opts, _ = getopt.getopt(argv,
-                                "tqh:m:s:x:y:c:",
-                                ["terminal_beep", "quiet", "hours=", "minutes=", "seconds=",
-                                 "xsize=", "ysize=", "color="]
-                               )
-    except getopt.GetoptError:
-        print("Usage:\n countdowntimer.py [Arguments]\n")
-        print("Arguments:")
-        print("  [--color=<color>] [-c <color>]")
-        print("  [--help ]   Print Help (this message) and exit")
-        print("  [-h <#>] [--hours=<#>]")
-        print("  [-m <#>] [--minutes=<#>]")
-        print("  [-s <#>] [--secondss=<#>]")
-        print("  [-q or --quiet]  Do not print time left in terminal")
-        print("  [-t or --terminal_beep]")
-        print("  [-x <xwidth>] [--xsize=<xwidth>]")
-        print("  [-y <yheight>] [--ysize=<ywidth>]")
-        sys.exit(2)
 
-    for opt, arg in opts:
-        if opt in ("-h", "--hours"):
-            dict_time['hours'] = float(arg)
-        elif opt in ("-m", "--minutes"):
-            dict_time['minutes'] = float(arg)
-        elif opt in ("-s", "--seconds"):
-            dict_time['seconds'] = float(arg)
-        elif opt in ("-x", "--xsize"):
-            if arg == '%':
-                width_px = .5 * GLOBALWINDOW.winfo_screenwidth()
-                int_xsize = int(width_px)
-            else:
-                int_xsize = int(arg)
-        elif opt in ("-c", "--color"):
-            time_left_color = arg
-        elif opt in ("-y", "--ysize"):
-            if arg == '%':
-                height_px = .5 * GLOBALWINDOW.winfo_screenheight()
-                int_ysize = int(height_px)
-            else:
-                int_ysize = int(arg)
-        elif opt in ("-t", "--terminal_beep"):
-            terminal_beep = 1
-        elif opt in ("-q", "--quiet"):
-            quiet = 1
-
+    int_xsize, int_ysize, quiet, terminal_beep, time_left_color, dict_time = get_arguments(argv)
     #Set xsize.
     if int_xsize == 0 and int_ysize != 0:
         int_xsize = int_ysize
@@ -251,6 +204,66 @@ def main(argv):
         topwindow.quit()
 
     topwindow.mainloop()
+
+def get_arguments(argv):
+    """Setup parameters from command line"""
+    #setup the defaults
+    quiet = 0
+    terminal_beep = 0
+    dict_time = {'seconds': 0, 'minutes': 0, 'hours': 0}
+    int_xsize = 0
+    int_ysize = 0
+    time_left_color = "red"
+    #If need args uncomment below and replace _ with args
+    #args = []
+    opts = []
+    try:
+        opts, _ = getopt.getopt(argv,
+                                "tqh:m:s:x:y:c:",
+                                ["terminal_beep", "quiet", "hours=", "minutes=", "seconds=",
+                                 "xsize=", "ysize=", "color="]
+                               )
+    except getopt.GetoptError:
+        print("Usage:\n countdowntimer.py [Arguments]\n")
+        print("Arguments:")
+        print("  [--color=<color>] [-c <color>]")
+        print("  [--help ]   Print Help (this message) and exit")
+        print("  [-h <#>] [--hours=<#>]")
+        print("  [-m <#>] [--minutes=<#>]")
+        print("  [-s <#>] [--secondss=<#>]")
+        print("  [-q or --quiet]  Do not print time left in terminal")
+        print("  [-t or --terminal_beep]")
+        print("  [-x <#xwidth>] [--xsize=<#xwidth>]")
+        print("  [-y <#yheight>] [--ysize=<#yheight>]")
+        sys.exit(2)
+
+    for opt, arg in opts:
+        if opt in ("-h", "--hours"):
+            dict_time['hours'] = float(arg)
+        elif opt in ("-m", "--minutes"):
+            dict_time['minutes'] = float(arg)
+        elif opt in ("-s", "--seconds"):
+            dict_time['seconds'] = float(arg)
+        elif opt in ("-x", "--xsize"):
+            if arg == '%':
+                width_px = .5 * GLOBALWINDOW.winfo_screenwidth()
+                int_xsize = int(width_px)
+            else:
+                int_xsize = int(arg)
+        elif opt in ("-c", "--color"):
+            time_left_color = arg
+        elif opt in ("-y", "--ysize"):
+            if arg == '%':
+                height_px = .5 * GLOBALWINDOW.winfo_screenheight()
+                int_ysize = int(height_px)
+            else:
+                int_ysize = int(arg)
+        elif opt in ("-t", "--terminal_beep"):
+            terminal_beep = 1
+        elif opt in ("-q", "--quiet"):
+            quiet = 1
+
+    return int_xsize, int_ysize, quiet, terminal_beep, time_left_color, dict_time
 
 def set_start_seconds(dict_time):
     """Convert start time parameters to seconds"""
