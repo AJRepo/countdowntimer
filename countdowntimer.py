@@ -181,6 +181,7 @@ def main(argv):
         print("  [-t or --terminal_beep]")
         print("  [-x <xwidth>] [-y <yheight>]")
         sys.exit(2)
+
     for opt, arg in opts:
         if opt in ("-h", "--hours"):
             dict_time['hours'] = float(arg)
@@ -208,19 +209,15 @@ def main(argv):
             quiet = 1
 
     #Set xsize.
-    if int_xsize == 0:
-        if int_ysize != 0:
-            int_xsize = int_ysize
-        else:
-            int_xsize = 200
+    if int_xsize == 0 and int_ysize != 0:
+        int_xsize = int_ysize
+    elif int_xsize == 0:
+        int_xsize = 200
     #Set Ysize. In theory you'd never need fallback = 200 since xsize is set above
-    if int_ysize == 0:
-        if int_xsize != 0:
-            int_ysize = int_xsize
-        else:
-            int_ysize = 200
-
-
+    if int_ysize == 0 and int_xsize != 0:
+        int_ysize = int_xsize
+    elif int_ysize == 0:
+        int_ysize = 200
 
     #debugging prints
     #print "ARGS={0}".format(args)
