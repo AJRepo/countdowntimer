@@ -32,10 +32,10 @@ class Countdowntimer:
 
         self.root_window.mainloop()
 
-        print(self.clock_features)
+        #print(self.clock_features)
         #print(self.clock_features['dict_time'])
         #print(self.clock_features['dict_time']['minutes'])
-        print("Program Exited Ok")
+        #print("Program Exited Ok")
 
     def setup_labels(self):
         """set the labels for the clock
@@ -127,7 +127,7 @@ class Countdowntimer:
         self.root_window.wm_attributes("-topmost", 1)
         self.root_window.title("Graphical Countdown Timer!!!")
 
-        print("SELFARGS=", self.args)
+        #print("SELFARGS=", self.args)
         widget_0 = Label(self.root_window, text="0")
         widget_0.grid(row=4, column=1)
         widget_15 = Label(self.root_window, text="15")
@@ -141,12 +141,13 @@ class Countdowntimer:
                           width=self.clock_features['x_size'])
         widget_c.grid(row=5, column=1)
         #add buttons/fields interface for changing times, start/stop
-        widget_buttons = Button(self.root_window, text="Restart", command=lambda: quit)
-        widget_buttons.grid(row=7, column=0)
-        widget_buttons = Button(self.root_window, text="Pause", command=lambda: quit)
-        widget_buttons.grid(row=7, column=1)
-        widget_buttons = Button(self.root_window, text="Adj. Time", command=lambda: quit)
-        widget_buttons.grid(row=7, column=3)
+        if self.clock_features['buttons']:
+            widget_buttons = Button(self.root_window, text="Restart", command=lambda: quit)
+            widget_buttons.grid(row=7, column=0)
+            widget_buttons = Button(self.root_window, text="Pause", command=lambda: quit)
+            widget_buttons.grid(row=7, column=1)
+            widget_buttons = Button(self.root_window, text="Adj. Time", command=lambda: quit)
+            widget_buttons.grid(row=7, column=3)
 
         widget_c.create_oval(0, 0, self.clock_features['x_size'],
                              self.clock_features['y_size'], fill="white", tag="base")
@@ -158,9 +159,11 @@ class Countdowntimer:
 
     def setup_args(self):
         """Setup parameters from command line"""
+        #pylint: disable=too-many-branches
         #setup the defaults
         quiet = 0
         terminal_beep = 0
+        buttons = False
         dict_time = {'seconds': 0, 'minutes': 0, 'hours': 0}
         int_xsize = int_ysize = 0
         time_left_color = "red"
@@ -169,13 +172,14 @@ class Countdowntimer:
         opts = []
         try:
             opts, _ = getopt.getopt(self.args,
-                                    "tqh:m:s:x:y:c:",
+                                    "btqh:m:s:x:y:c:",
                                     ["terminal_beep", "quiet", "hours=", "minutes=", "seconds=",
-                                     "xsize=", "ysize=", "color="]
+                                     "buttons", "xsize=", "ysize=", "color="]
                                    )
         except getopt.GetoptError:
             print("Usage:\n countdowntimer.py [Arguments]\n")
             print("Arguments:")
+            print("  [--buttons] [-b] Add buttons to control timer")
             print("  [--color=<color>] [-c <color>]")
             print("  [--help ]   Print Help (this message) and exit")
             print("  [-h <#>] [--hours=<#>]")
@@ -204,6 +208,8 @@ class Countdowntimer:
                 terminal_beep = 1
             elif opt in ("-q", "--quiet"):
                 quiet = 1
+            elif opt in ("-b", "--buttons"):
+                buttons = True
 
         if int_ysize == 0 and int_xsize != 0:
             int_ysize = int_xsize
@@ -221,6 +227,7 @@ class Countdowntimer:
         return {'x_size': int_xsize, 'y_size': int_ysize,\
                 'quiet': quiet, 'terminal_beep': terminal_beep,\
                 'time_left_color': time_left_color,\
+                'buttons': buttons,\
                 'dict_time': dict_time}
 
     def default_size_check(self, int_size):
