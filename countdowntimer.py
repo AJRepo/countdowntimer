@@ -23,7 +23,7 @@ class Countdowntimer:
         self.root_window = Tk()
         self.root_window.title("Countdown Timer")
 
-        self.clock_features = self.get_arguments()
+        self.clock_features = self.setup_args()
 
         self.set_start_seconds()
 
@@ -156,7 +156,7 @@ class Countdowntimer:
                             "widget_45": widget_45,
                             "widget_c": widget_c}
 
-    def get_arguments(self):
+    def setup_args(self):
         """Setup parameters from command line"""
         #setup the defaults
         quiet = 0
