@@ -22,6 +22,7 @@ class Countdowntimer:
 
         self.root_window = Tk()
         self.root_window.title("Countdown Timer")
+        self.root_window.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.clock_features = self.setup_args()
 
@@ -30,8 +31,13 @@ class Countdowntimer:
         self.setup_topwindow()
         self.runclock()
 
-        self.root_window.mainloop()
+        #don't need both mainloop() and while in runclock()
+        #self.root_window.mainloop()
 
+        if self.clock_features['terminal_beep'] == 1:
+            for _ in range(1, 10):
+                print('\a')
+                time.sleep(1)
         #print(self.clock_features)
         #print(self.clock_features['dict_time'])
         #print(self.clock_features['dict_time']['minutes'])
@@ -40,6 +46,8 @@ class Countdowntimer:
     def setup_labels(self):
         """set the labels for the clock
         """
+        #if self.running and self.widget_dict['widget_0'].winfo_exists():
+        #if self.running and not self.clock_features['exiting']:
         top_label = int(self.timeleft/3600)*60
         #in python int() always rounds down
         self.widget_dict['widget_0'].config(text=top_label)
@@ -57,63 +65,60 @@ class Countdowntimer:
         """Run the countdown clock
         """
         arr_coord = (0, 0, self.clock_features['x_size'], self.clock_features['y_size'])
-        start_seconds = self.timeleft
         last_seconds_left = round(self.timeleft, 0)
         percent_left = self.timeleft/3600
         extent_degrees_left = 360 * percent_left
-        #elapsedtime = 0
-        starttime = time.time()
+        last_time = time.time()
 
         #not >= 0 because we don't want @0 to execute
-        while self.timeleft > 0 and self.running:
-            elapsedtime = time.time() - starttime
-            self.timeleft = start_seconds - elapsedtime
-            seconds_left = round(self.timeleft, 0)
-            self.setup_labels()
-
-            #percent red can be > 100% but it is normalized to 360 deg as an extent
-            if (self.timeleft > 3599) and (seconds_left%3600 == 0):
-                percent_left = self.timeleft/3600
+        while self.timeleft > 0 and not self.clock_features['exiting']:
+            if self.running:
+                this_time = time.time()
+                self.timeleft = self.timeleft - (this_time - last_time)
+                seconds_left = round(self.timeleft, 0)
                 self.setup_labels()
-                self.print_m()
-                self.root_window.after(1000)
-            elif (self.timeleft > 300) and (seconds_left%300 == 0):
-                percent_left = self.timeleft/3600
-                self.print_m()
-                self.root_window.after(1000)
-            elif 60 <= self.timeleft < 301 and seconds_left%60 == 0:
-                percent_left = self.timeleft/3600
-                self.print_m()
-                self.root_window.after(1000)
-            elif 20 <= self.timeleft <= 60:
-                percent_left = self.timeleft/60
-                if self.clock_features['quiet'] == 0 and last_seconds_left != seconds_left\
-                                                and seconds_left%5 == 0:
-                    print("Seconds remaining =" + str(seconds_left))
-                self.root_window.after(100)
-            elif self.timeleft < 20:
-                percent_left = self.timeleft/60
-                if self.clock_features['quiet'] == 0 and last_seconds_left != seconds_left:
-                    print("Seconds remaining =" + str(seconds_left))
-                self.root_window.after(50)
+
+                #percent red can be > 100% but it is normalized to 360 deg as an extent
+                if (self.timeleft > 3599) and (seconds_left%3600 == 0):
+                    percent_left = self.timeleft/3600
+                    self.setup_labels()
+                    self.print_m()
+                    self.root_window.after(1000)
+                elif ((self.timeleft > 300) and (seconds_left%300 == 0)) or \
+                     (60 <= self.timeleft < 301 and seconds_left%60 == 0):
+                    percent_left = self.timeleft/3600
+                    self.print_m()
+                    self.root_window.after(1000)
+                elif 20 <= self.timeleft <= 60:
+                    percent_left = self.timeleft/60
+                    if self.clock_features['quiet'] == 0 and last_seconds_left != seconds_left\
+                                                    and seconds_left%5 == 0:
+                        print("Seconds remaining =" + str(seconds_left))
+                    self.root_window.after(100)
+                elif self.timeleft < 20:
+                    percent_left = self.timeleft/60
+                    if self.clock_features['quiet'] == 0 and last_seconds_left != seconds_left:
+                        print("Seconds remaining =" + str(seconds_left))
+                    self.root_window.after(50)
+                else:
+                    percent_left = self.timeleft/3600
+                    self.root_window.after(1000)
+
+                extent_degrees_left = 360 * percent_left
+                self.widget_dict['widget_c'].create_oval(arr_coord, fill="white")
+                self.widget_dict['widget_c'].create_arc(arr_coord,
+                                                        start=90,
+                                                        extent=-extent_degrees_left,
+                                                        fill=self.clock_features['time_left_color'])
+
+                self.root_window.update()
+                last_seconds_left = seconds_left
+                last_time = this_time
             else:
-                percent_left = self.timeleft/3600
-                self.root_window.after(1000)
+                self.root_window.update()
+                time.sleep(.001)
+                this_time = last_time = time.time()
 
-            extent_degrees_left = 360 * percent_left
-            self.widget_dict['widget_c'].create_oval(arr_coord, fill="white")
-            self.widget_dict['widget_c'].create_arc(arr_coord,
-                                                    start=90,
-                                                    extent=-extent_degrees_left,
-                                                    fill=self.clock_features['time_left_color'])
-
-            self.root_window.update()
-            last_seconds_left = seconds_left
-
-        if self.clock_features['terminal_beep'] == 1:
-            for _ in range(1, 10):
-                print('\a')
-                time.sleep(1)
 
         #at t=0 set to an all white circle
         if self.timeleft <= 0:
@@ -144,10 +149,13 @@ class Countdowntimer:
         if self.clock_features['buttons']:
             widget_buttons = Button(self.root_window, text="Restart", command=lambda: quit)
             widget_buttons.grid(row=7, column=0)
-            widget_buttons = Button(self.root_window, text="Pause", command=lambda: quit)
-            widget_buttons.grid(row=7, column=1)
+            widget_pause_button = Button(self.root_window, text="Pause",
+                                         command=self.pause_unpause)
+            widget_pause_button.grid(row=7, column=1)
             widget_buttons = Button(self.root_window, text="Adj. Time", command=lambda: quit)
             widget_buttons.grid(row=7, column=3)
+        else:
+            widget_pause_button = 'DISABLED'
 
         widget_c.create_oval(0, 0, self.clock_features['x_size'],
                              self.clock_features['y_size'], fill="white", tag="base")
@@ -155,7 +163,17 @@ class Countdowntimer:
                             "widget_15": widget_15,
                             "widget_30": widget_30,
                             "widget_45": widget_45,
-                            "widget_c": widget_c}
+                            "widget_c": widget_c,
+                            "widget_pause_button": widget_pause_button
+                           }
+
+    def pause_unpause(self):
+        """Toggle self.running variable"""
+        #self.widget_dict['widget_pause_button'].config(state="normal")
+        if self.running:
+            self.running = False
+        else:
+            self.running = True
 
     def setup_args(self):
         """Setup parameters from command line"""
@@ -228,7 +246,9 @@ class Countdowntimer:
                 'quiet': quiet, 'terminal_beep': terminal_beep,\
                 'time_left_color': time_left_color,\
                 'buttons': buttons,\
-                'dict_time': dict_time}
+                'dict_time': dict_time,\
+                'exiting': False
+               }
 
     def default_size_check(self, int_size):
         """setup Default window size if size not set"""
@@ -258,6 +278,9 @@ class Countdowntimer:
 
     def on_closing(self):
         """End the program gracefully if user clicks the X"""
+        self.running = False
+        self.clock_features['exiting'] = True
+        self.root_window.update_idletasks()
         self.root_window.eval('::ttk::CancelRepeat')
         self.root_window.quit()
         self.root_window.destroy()
