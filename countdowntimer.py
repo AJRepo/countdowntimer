@@ -29,6 +29,9 @@ class Countdowntimer:
         self.set_start_seconds()
 
         self.setup_topwindow()
+
+        self.clock_coord = (0, 0, self.clock_features['x_size'], self.clock_features['y_size'])
+
         self.runclock()
 
         #don't need both mainloop() and while in runclock()
@@ -64,10 +67,7 @@ class Countdowntimer:
     def runclock(self):
         """Run the countdown clock
         """
-        arr_coord = (0, 0, self.clock_features['x_size'], self.clock_features['y_size'])
         last_seconds_left = round(self.timeleft, 0)
-        percent_left = self.timeleft/3600
-        extent_degrees_left = 360 * percent_left
         last_time = time.time()
 
         #not >= 0 because we don't want @0 to execute
@@ -78,38 +78,7 @@ class Countdowntimer:
                 seconds_left = round(self.timeleft, 0)
                 self.setup_labels()
 
-                #percent red can be > 100% but it is normalized to 360 deg as an extent
-                if (self.timeleft > 3599) and (seconds_left%3600 == 0):
-                    percent_left = self.timeleft/3600
-                    self.setup_labels()
-                    self.print_m()
-                    self.root_window.after(1000)
-                elif ((self.timeleft > 300) and (seconds_left%300 == 0)) or \
-                     (60 <= self.timeleft < 301 and seconds_left%60 == 0):
-                    percent_left = self.timeleft/3600
-                    self.print_m()
-                    self.root_window.after(1000)
-                elif 20 <= self.timeleft <= 60:
-                    percent_left = self.timeleft/60
-                    if self.clock_features['quiet'] == 0 and last_seconds_left != seconds_left\
-                                                    and seconds_left%5 == 0:
-                        print("Seconds remaining =" + str(seconds_left))
-                    self.root_window.after(100)
-                elif self.timeleft < 20:
-                    percent_left = self.timeleft/60
-                    if self.clock_features['quiet'] == 0 and last_seconds_left != seconds_left:
-                        print("Seconds remaining =" + str(seconds_left))
-                    self.root_window.after(50)
-                else:
-                    percent_left = self.timeleft/3600
-                    self.root_window.after(1000)
-
-                extent_degrees_left = 360 * percent_left
-                self.widget_dict['widget_c'].create_oval(arr_coord, fill="white")
-                self.widget_dict['widget_c'].create_arc(arr_coord,
-                                                        start=90,
-                                                        extent=-extent_degrees_left,
-                                                        fill=self.clock_features['time_left_color'])
+                self.draw_time_left(seconds_left, last_seconds_left)
 
                 self.root_window.update()
                 last_seconds_left = seconds_left
@@ -122,9 +91,48 @@ class Countdowntimer:
 
         #at t=0 set to an all white circle
         if self.timeleft <= 0:
-            self.widget_dict['widget_c'].create_oval(arr_coord, fill="white")
+            self.widget_dict['widget_c'].create_oval(self.clock_coord, fill="white")
             self.root_window.update()
             self.on_closing()
+
+
+    def draw_time_left(self, seconds_left, last_seconds_left):
+        """draw the countdown clock wedge"""
+        arr_coord = (0, 0, self.clock_features['x_size'], self.clock_features['y_size'])
+        #percent_left = self.timeleft/3600
+
+        #percent red can be > 100% but it is normalized to 360 deg as an extent
+        if (self.timeleft > 3599) and (seconds_left%3600 == 0):
+            percent_left = self.timeleft/3600
+            self.setup_labels()
+            self.print_m()
+            self.root_window.after(1000)
+        elif ((self.timeleft > 300) and (seconds_left%300 == 0)) or \
+             (60 <= self.timeleft < 301 and seconds_left%60 == 0):
+            percent_left = self.timeleft/3600
+            self.print_m()
+            self.root_window.after(1000)
+        elif 20 <= self.timeleft <= 60:
+            percent_left = self.timeleft/60
+            if self.clock_features['quiet'] == 0 and last_seconds_left != seconds_left\
+                                            and seconds_left%5 == 0:
+                print("Seconds remaining =" + str(seconds_left))
+            self.root_window.after(100)
+        elif self.timeleft < 20:
+            percent_left = self.timeleft/60
+            if self.clock_features['quiet'] == 0 and last_seconds_left != seconds_left:
+                print("Seconds remaining =" + str(seconds_left))
+            self.root_window.after(50)
+        else:
+            percent_left = self.timeleft/3600
+            self.root_window.after(1000)
+
+        extent_degrees_left = 360 * percent_left
+        self.widget_dict['widget_c'].create_oval(arr_coord, fill="white")
+        self.widget_dict['widget_c'].create_arc(arr_coord,
+                                                start=90,
+                                                extent=-extent_degrees_left,
+                                                fill=self.clock_features['time_left_color'])
 
     def setup_topwindow(self):
         """setup the timer window
@@ -147,7 +155,8 @@ class Countdowntimer:
         widget_c.grid(row=5, column=1)
         #add buttons/fields interface for changing times, start/stop
         if self.clock_features['buttons']:
-            widget_buttons = Button(self.root_window, text="Restart", command=lambda: quit)
+            widget_buttons = Button(self.root_window, text="Restart",
+                                    command=self.restart)
             widget_buttons.grid(row=7, column=0)
             widget_pause_button = Button(self.root_window, text="Pause",
                                          command=self.pause_unpause)
@@ -166,6 +175,12 @@ class Countdowntimer:
                             "widget_c": widget_c,
                             "widget_pause_button": widget_pause_button
                            }
+
+    def restart(self):
+        """Reset timeleft variable"""
+        self.set_start_seconds()
+        self.setup_topwindow()
+        self.draw_time_left(self.timeleft, self.timeleft)
 
     def pause_unpause(self):
         """Toggle self.running variable"""
