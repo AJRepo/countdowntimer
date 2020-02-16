@@ -195,8 +195,6 @@ class Countdowntimer:
 
     def setup_args(self):
         """Setup parameters from command line"""
-        #pylint: disable=too-many-branches
-        #pylint: disable=too-many-statements
         #setup the defaults
         quiet = 0
         terminal_beep = 0
@@ -252,14 +250,8 @@ class Countdowntimer:
             elif opt in ("-b", "--buttons"):
                 buttons = True
 
-        if int_ysize == 0 and int_xsize != 0:
-            int_ysize = int_xsize
-
-        if int_xsize == 0 and int_ysize != 0:
-            int_xsize = int_ysize
-
-        int_ysize = self.default_size_check(int_ysize)
-        int_xsize = self.default_size_check(int_xsize)
+        int_ysize = self.default_size_check(int_ysize, int_xsize)
+        int_xsize = self.default_size_check(int_xsize, int_ysize)
 
         #Debugging
         #for opt, arg in opts:
@@ -274,9 +266,12 @@ class Countdowntimer:
                 'exiting': False
                }
 
-    def default_size_check(self, int_size):
+    def default_size_check(self, int_size, other_axis):
         """setup Default window size if size not set"""
-        if self.args == "" or int_size <= 0:
+        #
+        if int_size <= 0 < other_axis:
+            int_size = other_axis
+        elif self.args == "" or int_size <= 0:
             int_size = 200
         return int_size
 
