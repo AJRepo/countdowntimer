@@ -196,6 +196,7 @@ class Countdowntimer:
     def setup_args(self):
         """Setup parameters from command line"""
         #pylint: disable=too-many-branches
+        #pylint: disable=too-many-statements
         #setup the defaults
         quiet = 0
         terminal_beep = 0
