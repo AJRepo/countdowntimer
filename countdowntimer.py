@@ -89,9 +89,10 @@ class Countdowntimer:
                 this_time = last_time = time.time()
 
 
-        #at t=0 set to an all white circle
+        #at t=0 set to an all clock_bg_color circle
         if self.timeleft <= 0:
-            self.widget_dict['widget_c'].create_oval(self.clock_coord, fill="white")
+            self.widget_dict['widget_c'].create_oval(self.clock_coord,
+                                                     fill=self.clock_features['clock_bg_color'])
             self.root_window.update()
             self.on_closing()
 
@@ -128,7 +129,8 @@ class Countdowntimer:
             self.root_window.after(1000)
 
         extent_degrees_left = 360 * percent_left
-        self.widget_dict['widget_c'].create_oval(arr_coord, fill="white")
+        self.widget_dict['widget_c'].create_oval(arr_coord,
+                                                 fill=self.clock_features['clock_bg_color'])
         self.widget_dict['widget_c'].create_arc(arr_coord,
                                                 start=90,
                                                 extent=-extent_degrees_left,
@@ -167,7 +169,8 @@ class Countdowntimer:
             widget_pause_button = 'DISABLED'
 
         widget_c.create_oval(0, 0, self.clock_features['x_size'],
-                             self.clock_features['y_size'], fill="white", tag="base")
+                             self.clock_features['y_size'],
+                             fill=self.clock_features['clock_bg_color'], tag="base")
         self.widget_dict = {"widget_0": widget_0,
                             "widget_15": widget_15,
                             "widget_30": widget_30,
@@ -200,6 +203,7 @@ class Countdowntimer:
         dict_time = {'seconds': 0, 'minutes': 0, 'hours': 0}
         int_xsize = int_ysize = 0
         time_left_color = "red"
+        clock_bg_color = "white"
         #If need args uncomment below and replace _ with args
         #args = []
         opts = []
@@ -207,13 +211,14 @@ class Countdowntimer:
             opts, _ = getopt.getopt(self.args,
                                     "btqh:m:s:x:y:c:",
                                     ["terminal_beep", "quiet", "hours=", "minutes=", "seconds=",
-                                     "buttons", "xsize=", "ysize=", "color="]
+                                     "buttons", "xsize=", "ysize=", "color=", "clock_bg_color="]
                                    )
         except getopt.GetoptError:
             print("Usage:\n countdowntimer.py [Arguments]\n")
             print("Arguments:")
             print("  [--buttons] [-b] Add buttons to control timer")
-            print("  [--color=<color>] [-c <color>]")
+            print("  [--color=<color>] [-c <color>] Color of time to 0")
+            print("  [--clock_bg_color=<color>] Color of clock not filled by timer")
             print("  [--help ]   Print Help (this message) and exit")
             print("  [-h <#>] [--hours=<#>]")
             print("  [-m <#>] [--minutes=<#>]")
@@ -237,6 +242,8 @@ class Countdowntimer:
                 int_ysize = self.setup_size(arg)
             elif opt in ("-c", "--color"):
                 time_left_color = arg
+            elif opt == "--clock_bg_color":
+                clock_bg_color = arg
             elif opt in ("-t", "--terminal_beep"):
                 terminal_beep = 1
             elif opt in ("-q", "--quiet"):
@@ -260,6 +267,7 @@ class Countdowntimer:
         return {'x_size': int_xsize, 'y_size': int_ysize,\
                 'quiet': quiet, 'terminal_beep': terminal_beep,\
                 'time_left_color': time_left_color,\
+                'clock_bg_color': clock_bg_color,\
                 'buttons': buttons,\
                 'dict_time': dict_time,\
                 'exiting': False
