@@ -38,7 +38,7 @@ class Countdowntimer:
         #self.root_window.mainloop()
 
         if self.clock_features['terminal_beep'] == 1:
-            for _ in range(1, 10):
+            for _ in range(1, 5):
                 print('\a')
                 time.sleep(1)
         #print(self.clock_features)
