@@ -95,8 +95,8 @@ class Countdowntimer:
                 last_time = this_time
                 #print("DEBUG 10: Seconds remaining =" + str(seconds_left))
             else:
-                self.root_window.update()
                 #print("DEBUG 20: remaining =" + str(seconds_left))
+                self.root_window.update()
                 time.sleep(.001)
                 this_time = last_time = time.time()
 
