@@ -193,7 +193,7 @@ class Countdowntimer:
                                     command=self.restart)
             widget_buttons.grid(row=7, column=0)
             widget_pause_button = Button(self.root_window, text="Pause",
-                                         command=self.pause_unpause)
+                                         command=self.toggle_running)
             widget_pause_button.grid(row=7, column=1)
             widget_buttons = Button(self.root_window, text="Adj. Time", command=lambda: quit)
             widget_buttons.grid(row=7, column=3)
@@ -217,7 +217,7 @@ class Countdowntimer:
         self.setup_topwindow()
         self.draw_time_left(self.timeleft, self.timeleft)
 
-    def pause_unpause(self):
+    def toggle_running(self):
         """Toggle self.running variable"""
         #self.widget_dict['widget_pause_button'].config(state="normal")
         if self.running:
