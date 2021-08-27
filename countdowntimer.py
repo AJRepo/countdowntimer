@@ -34,12 +34,6 @@ class Countdowntimer:
 
         #Setup Clock pre-running of timer
         self.setup_labels()
-        if self.timeleft > 3599:
-            this_clock_bg_color = "orange"
-        else:
-            this_clock_bg_color = self.clock_features['clock_bg_color']
-        self.draw_pie(self.fraction_left(), this_clock_bg_color)
-        self.root_window.update()
 
         #Run the countdown timer and display
         self.runclock()
@@ -86,11 +80,13 @@ class Countdowntimer:
                 this_time = time.time()
                 self.timeleft = self.timeleft - (this_time - last_time)
                 seconds_left = round(self.timeleft, 0)
-                self.setup_labels()
 
-                self.draw_time_left(seconds_left, last_seconds_left)
+                #draw clock functions
+                if self.clock_features['console_only'] is not True:
+                    self.draw_clock()
 
-                self.root_window.update()
+                self.sleep_time(seconds_left, last_seconds_left)
+
                 last_seconds_left = seconds_left
                 last_time = this_time
                 #print("DEBUG 10: Seconds remaining =" + str(seconds_left))
@@ -101,6 +97,13 @@ class Countdowntimer:
                 this_time = last_time = time.time()
 
 
+    def draw_clock(self):
+        """draw the clock """
+        self.setup_labels()
+
+        self.draw_time_left()
+
+        self.root_window.update()
         #at t=0 set to an all clock_bg_color circle
         if self.timeleft <= 0:
             self.widget_dict['widget_c'].create_oval(self.clock_coord,
@@ -108,8 +111,7 @@ class Countdowntimer:
             self.root_window.update()
             self.on_closing()
 
-
-    def draw_time_left(self, seconds_left, last_seconds_left):
+    def draw_time_left(self):
         """draw the countdown clock wedge"""
         if self.timeleft > 3599:
             this_clock_bg_color = "orange"
@@ -122,6 +124,8 @@ class Countdowntimer:
         #Don't use self.root_window.after(miliseconds) as we want to draw and THEN wait
         self.root_window.update()
 
+    def sleep_time(self, seconds_left, last_seconds_left):
+        """Determine the time to slep based on how much time is remaining"""
         #percent red can be > 100% but it is normalized to 360 deg as an extent
         if self.timeleft > 305:
             #update every 5 seconds if > 5 minutes 5 seconds to go
@@ -200,9 +204,6 @@ class Countdowntimer:
         else:
             widget_pause_button = 'DISABLED'
 
-        widget_c.create_oval(0, 0, self.clock_features['x_size'],
-                             self.clock_features['y_size'],
-                             fill=self.clock_features['clock_bg_color'], tag="base")
         self.widget_dict = {"widget_0": widget_0,
                             "widget_15": widget_15,
                             "widget_30": widget_30,
@@ -211,11 +212,16 @@ class Countdowntimer:
                             "widget_pause_button": widget_pause_button
                            }
 
+        if self.clock_features['console_only'] is not True:
+            widget_c.create_oval(0, 0, self.clock_features['x_size'],
+                                 self.clock_features['y_size'],
+                                 fill=self.clock_features['clock_bg_color'], tag="base")
+
     def restart(self):
         """Reset timeleft variable"""
         self.set_start_seconds()
         self.setup_topwindow()
-        self.draw_time_left(self.timeleft, self.timeleft)
+        self.draw_time_left()
 
     def toggle_running(self):
         """Toggle self.running variable"""
@@ -231,6 +237,7 @@ class Countdowntimer:
         quiet = 0
         terminal_beep = 0
         buttons = False
+        console_only = False
         dict_time = {'seconds': 0, 'minutes': 0, 'hours': 0}
         int_xsize = int_ysize = 0
         time_left_color = "red"
@@ -242,12 +249,14 @@ class Countdowntimer:
             opts, _ = getopt.getopt(self.args,
                                     "btqh:m:s:x:y:c:",
                                     ["terminal_beep", "quiet", "hours=", "minutes=", "seconds=",
-                                     "buttons", "xsize=", "ysize=", "color=", "clock_bg_color="]
+                                     "buttons", "xsize=", "ysize=", "color=", "clock_bg_color=",
+                                     "console_only"]
                                    )
         except getopt.GetoptError:
             print("Usage:\n countdowntimer.py [Arguments]\n")
             print("Arguments:")
             print("  [--buttons] [-b] Add buttons to control timer")
+            print("  [--console_only] Only use the console - not graphical timer")
             print("  [--color=<color>] [-c <color>] Color of time remaining")
             print("  [--clock_bg_color=<color>] Color not filled by timer when seconds <= 60")
             print("  [--help ]   Print Help (this message) and exit")
@@ -271,6 +280,8 @@ class Countdowntimer:
                 int_xsize = self.setup_size(arg)
             elif opt in ("-y", "--ysize"):
                 int_ysize = self.setup_size(arg)
+            elif opt == "--console_only":
+                console_only = True
             elif opt in ("-c", "--color"):
                 time_left_color = arg
             elif opt == "--clock_bg_color":
@@ -295,7 +306,8 @@ class Countdowntimer:
                 'clock_bg_color': clock_bg_color,\
                 'buttons': buttons,\
                 'dict_time': dict_time,\
-                'exiting': False
+                'exiting': False, \
+                'console_only': console_only
                }
 
     def default_size_check(self, int_size, other_axis):
