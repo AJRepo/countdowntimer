@@ -65,8 +65,7 @@ class Countdowntimer:
     def print_m(self):
         """print minutes remaining
         """
-        if self.clock_features['quiet'] == 0: #if not quiet
-            print("Minutes Remaining =" + str(round(self.timeleft/60, 0)))
+        print("Minutes Remaining =" + str(round(self.timeleft/60, 0)))
 
     def runclock(self):
         """Run the countdown clock
@@ -85,7 +84,10 @@ class Countdowntimer:
                 if self.clock_features['console_only'] is not True:
                     self.draw_clock()
 
-                self.sleep_time(seconds_left, last_seconds_left)
+                if self.clock_features['quiet'] == 0:
+                    self.print_time(seconds_left, last_seconds_left)
+
+                self.sleep_time(seconds_left)
 
                 last_seconds_left = seconds_left
                 last_time = this_time
@@ -124,27 +126,43 @@ class Countdowntimer:
         #Don't use self.root_window.after(miliseconds) as we want to draw and THEN wait
         self.root_window.update()
 
-    def sleep_time(self, seconds_left, last_seconds_left):
+    def print_time(self, seconds_left, last_seconds_left):
+        """Print to terminal depending on how much time is remaining"""
+        if self.timeleft > 305 and (5*round(seconds_left/5))%3600 <= 0:
+            #print every hour
+            self.print_m()
+        elif ((self.timeleft > 300) and (seconds_left%300 == 0)):
+            #print every five min
+            self.print_m()
+        elif ((self.timeleft > 300) and (seconds_left%60 == 0) and \
+               self.clock_features['term_ppm'] ==1):
+            #print every min if promoted
+            self.print_m()
+        elif 60 <= self.timeleft < 301 and seconds_left%60 == 0:
+            #print every min under 5 min
+            self.print_m()
+        elif 5 <= self.timeleft <= 60:
+            #print every 5 seconds for 5 < t < 60
+            if last_seconds_left != seconds_left and seconds_left%5 == 0:
+                print("Seconds remaining =" + str(seconds_left))
+        elif self.timeleft < 5:
+            #print every second under 5 seconds
+            if last_seconds_left != seconds_left:
+                print("Seconds remaining =" + str(seconds_left))
+
+    def sleep_time(self, seconds_left):
         """Determine the time to slep based on how much time is remaining"""
         #percent red can be > 100% but it is normalized to 360 deg as an extent
         if self.timeleft > 305:
             #update every 5 seconds if > 5 minutes 5 seconds to go
             if (5*round(seconds_left/5))%3600 <= 0:
                 self.setup_labels()
-                self.print_m()
             time.sleep(5)
-        elif ((self.timeleft > 300) and (seconds_left%300 == 0)) or \
-             (60 <= self.timeleft < 301 and seconds_left%60 == 0):
-            self.print_m()
+        elif 60 <= self.timeleft <= 305:
             time.sleep(2)
         elif 5 <= self.timeleft <= 60:
-            if self.clock_features['quiet'] == 0 and last_seconds_left != seconds_left\
-                                            and seconds_left%5 == 0:
-                print("Seconds remaining =" + str(seconds_left))
             time.sleep(.1)
         elif self.timeleft < 5:
-            if self.clock_features['quiet'] == 0 and last_seconds_left != seconds_left:
-                print("Seconds remaining =" + str(seconds_left))
             time.sleep(.05)
         else:
             #print("DEBUG2: Seconds remaining =" + str(self.timeleft))
@@ -233,8 +251,12 @@ class Countdowntimer:
 
     def setup_args(self):
         """Setup parameters from command line"""
+        # There are that many command line options (branches, statements)
+        #pylint: disable=too-many-branches
+        #pylint: disable=too-many-statements
         #setup the defaults
         quiet = 0
+        term_ppm = 0
         terminal_beep = 0
         buttons = False
         console_only = False
@@ -250,7 +272,7 @@ class Countdowntimer:
                                     "btqh:m:s:x:y:c:",
                                     ["terminal_beep", "quiet", "hours=", "minutes=", "seconds=",
                                      "buttons", "xsize=", "ysize=", "color=", "clock_bg_color=",
-                                     "console_only"]
+                                     "console_only", "term_ppm"]
                                    )
         except getopt.GetoptError:
             print("Usage:\n countdowntimer.py [Arguments]\n")
@@ -264,7 +286,8 @@ class Countdowntimer:
             print("  [-m <#>] [--minutes=<#>]")
             print("  [-s <#>] [--secondss=<#>]")
             print("  [-q or --quiet]  Do not print time left in terminal")
-            print("  [-t or --terminal_beep]")
+            print("  [--term_ppm] Print to terminal time left each minute")
+            print("  [-t or --terminal_beep] Execute a beep at t=0")
             print("  [-x <#xwidth>] [--xsize=<#xwidth>]")
             print("  [-y <#yheight>] [--ysize=<#yheight>]")
             sys.exit(2)
@@ -288,6 +311,8 @@ class Countdowntimer:
                 clock_bg_color = arg
             elif opt in ("-t", "--terminal_beep"):
                 terminal_beep = 1
+            elif opt in ("--term_ppm"):
+                term_ppm = 1
             elif opt in ("-q", "--quiet"):
                 quiet = 1
             elif opt in ("-b", "--buttons"):
@@ -301,7 +326,9 @@ class Countdowntimer:
         #    print(opt, arg)
 
         return {'x_size': int_xsize, 'y_size': int_ysize,\
-                'quiet': quiet, 'terminal_beep': terminal_beep,\
+                'quiet': quiet,\
+                'term_ppm': term_ppm,\
+                'terminal_beep': terminal_beep,\
                 'time_left_color': time_left_color,\
                 'clock_bg_color': clock_bg_color,\
                 'buttons': buttons,\
