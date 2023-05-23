@@ -153,7 +153,9 @@ class Countdowntimer:
     def sleep_time(self, seconds_left):
         """Determine the time to slep based on how much time is remaining"""
         #percent red can be > 100% but it is normalized to 360 deg as an extent
-        if self.timeleft > 305:
+        if self.timeleft > 60 and self.clock_features['term_ppm'] == 1:
+            time.sleep(1)
+        elif self.timeleft > 305:
             #update every 5 seconds if > 5 minutes 5 seconds to go
             if (5*round(seconds_left/5))%3600 <= 0:
                 self.setup_labels()
