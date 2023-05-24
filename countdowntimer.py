@@ -65,7 +65,8 @@ class Countdowntimer:
     def print_m(self):
         """print minutes remaining
         """
-        print("Minutes Remaining =" + str(round(self.timeleft/60, 0)))
+        print("Time Remaining = About " + str(round(self.timeleft/60, 0)) + " minutes       ",
+               end='\r')
 
     def runclock(self):
         """Run the countdown clock
@@ -144,17 +145,17 @@ class Countdowntimer:
         elif 5 <= self.timeleft <= 60:
             #print every 5 seconds for 5 < t < 60
             if last_seconds_left != seconds_left and seconds_left%5 == 0:
-                print("Seconds remaining =" + str(seconds_left))
+                print("Time remaining = " + str(seconds_left) + " seconds      ", end='\r')
         elif self.timeleft < 5:
             #print every second under 5 seconds
             if last_seconds_left != seconds_left:
-                print("Seconds remaining =" + str(seconds_left))
+                print("Time remaining = " + str(seconds_left) + " seconds      ", end='\r')
 
     def sleep_time(self, seconds_left):
         """Determine the time to slep based on how much time is remaining"""
         #percent red can be > 100% but it is normalized to 360 deg as an extent
         if self.timeleft > 60 and self.clock_features['term_ppm'] == 1:
-            time.sleep(1)
+            time.sleep(.25)
         elif self.timeleft > 305:
             #update every 5 seconds if > 5 minutes 5 seconds to go
             if (5*round(seconds_left/5))%3600 <= 0:
@@ -379,4 +380,4 @@ class Countdowntimer:
 
 if __name__ == "__main__":
     INSTA = Countdowntimer(sys.argv[1:])
-    print("Program Ended Successfully")
+    print("Program Ended Successfully.        ")
