@@ -8,6 +8,7 @@ License: GPL 3. See LICENSE file.
 
 
 import time
+import tkinter as tk
 from tkinter import Tk, Label, Canvas, Button
 import sys
 import getopt
@@ -44,7 +45,7 @@ class Countdowntimer:
         if self.clock_features['terminal_beep'] == 1:
             for _ in range(1, 5):
                 print('\a')
-                time.sleep(1)
+                self.tksleep(1)
         #print(self.clock_features)
         #print(self.clock_features['dict_time'])
         #print(self.clock_features['dict_time']['minutes'])
@@ -86,7 +87,7 @@ class Countdowntimer:
                     self.draw_clock()
 
                 if self.clock_features['quiet'] == 0:
-                    self.print_time(seconds_left, last_seconds_left)
+                    self.console_print_time(seconds_left, last_seconds_left)
 
                 self.sleep_time(seconds_left)
 
@@ -96,7 +97,7 @@ class Countdowntimer:
             else:
                 #print("DEBUG 20: remaining =" + str(seconds_left))
                 self.root_window.update()
-                time.sleep(.001)
+                self.tksleep(.001)
                 this_time = last_time = time.time()
 
 
@@ -127,7 +128,7 @@ class Countdowntimer:
         #Don't use self.root_window.after(miliseconds) as we want to draw and THEN wait
         self.root_window.update()
 
-    def print_time(self, seconds_left, last_seconds_left):
+    def console_print_time(self, seconds_left, last_seconds_left):
         """Print to terminal depending on how much time is remaining"""
         if self.timeleft > 305 and (5*round(seconds_left/5))%3600 <= 0:
             #print every hour
@@ -151,25 +152,38 @@ class Countdowntimer:
             if last_seconds_left != seconds_left:
                 print("Time remaining = " + str(seconds_left) + " seconds      ", end='\r')
 
+    def gui_print_time(self, seconds_left):
+        """Print to gui the time left"""
+
+    def tksleep(self, seconds):
+        """Emulating self.tksleep(seconds)"""
+        mili_seconds = int(seconds*1000)
+        #print(f"WAITING {ms} Miliseconds and {self.timeleft}")
+        #Don't call this after the window has been destroyed!
+        if self.timeleft > 0:
+            var = tk.IntVar(self.root_window)
+            self.root_window.after(mili_seconds, lambda: var.set(1))
+            self.root_window.wait_variable(var)
+
     def sleep_time(self, seconds_left):
         """Determine the time to slep based on how much time is remaining"""
         #percent red can be > 100% but it is normalized to 360 deg as an extent
         if self.timeleft > 60 and self.clock_features['term_ppm'] == 1:
-            time.sleep(.25)
+            self.tksleep(.25)
         elif self.timeleft > 305:
             #update every 5 seconds if > 5 minutes 5 seconds to go
             if (5*round(seconds_left/5))%3600 <= 0:
                 self.setup_labels()
-            time.sleep(5)
+            self.tksleep(5)
         elif 60 <= self.timeleft <= 305:
-            time.sleep(2)
+            self.tksleep(2)
         elif 5 <= self.timeleft <= 60:
-            time.sleep(.1)
+            self.tksleep(.1)
         elif self.timeleft < 5:
-            time.sleep(.05)
+            self.tksleep(.05)
         else:
             #print("DEBUG2: Seconds remaining =" + str(self.timeleft))
-            time.sleep(1)
+            self.tksleep(1)
 
 
     def fraction_left(self):
@@ -200,6 +214,7 @@ class Countdowntimer:
         self.root_window.title("Graphical Countdown Timer!!!")
 
         #print("SELFARGS=", self.args)
+
         widget_0 = Label(self.root_window, text="0")
         widget_0.grid(row=4, column=1)
         widget_15 = Label(self.root_window, text="15")
