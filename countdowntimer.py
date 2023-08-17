@@ -39,8 +39,10 @@ class Countdowntimer:
         #Run the countdown timer and display
         self.runclock()
 
-        #don't need both mainloop() and while in runclock()
-        #self.root_window.mainloop()
+        #Don't call self.root_window calls if in exiting mode
+        if self.running and not self.clock_features['exiting']:
+          self.root_window.wait_window()
+          self.root_window.mainloop()
 
         if self.clock_features['terminal_beep'] == 1:
             for _ in range(1, 5):
@@ -62,6 +64,7 @@ class Countdowntimer:
         self.widget_dict['widget_15'].config(text=top_label+15)
         self.widget_dict['widget_30'].config(text=top_label+30)
         self.widget_dict['widget_45'].config(text=top_label+45)
+        #self.widget_dict['widget_center_time'].config(top_label)
 
     def print_m(self):
         """print minutes remaining
@@ -160,7 +163,12 @@ class Countdowntimer:
         mili_seconds = int(seconds*1000)
         #print(f"WAITING {ms} Miliseconds and {self.timeleft}")
         #Don't call this after the window has been destroyed!
-        if self.timeleft > 0:
+
+        #DEBUG
+        #print(f"running={self.running}:exiting={self.clock_features['exiting']}")
+        if self.timeleft > 0 and self.running == True and self.clock_features['exiting'] == False and self.root_window.winfo_exists() == 1:
+            #DEBUG
+            #print(f"exists={self.root_window.winfo_exists()}:running={self.running}:exiting={self.clock_features['exiting']}")
             var = tk.IntVar(self.root_window)
             self.root_window.after(mili_seconds, lambda: var.set(1))
             self.root_window.wait_variable(var)
@@ -206,6 +214,7 @@ class Countdowntimer:
                                                 start=90,
                                                 extent=-extent_degrees_left,
                                                 fill=self.clock_features['time_left_color'])
+        #self.widget_dict['widget_center_time'].text('asdfasdfa')
 
     def setup_topwindow(self):
         """setup the timer window
@@ -215,6 +224,8 @@ class Countdowntimer:
 
         #print("SELFARGS=", self.args)
 
+        widget_center_time = Label(self.root_window, text="TIME")
+        widget_center_time.grid(row=5, column=1)
         widget_0 = Label(self.root_window, text="0")
         widget_0.grid(row=4, column=1)
         widget_15 = Label(self.root_window, text="15")
@@ -245,6 +256,7 @@ class Countdowntimer:
                             "widget_30": widget_30,
                             "widget_45": widget_45,
                             "widget_c": widget_c,
+                            "widget_center_time": widget_center_time,
                             "widget_pause_button": widget_pause_button
                            }
 
@@ -278,6 +290,7 @@ class Countdowntimer:
         terminal_beep = 0
         buttons = False
         console_only = False
+        display_numeric = False
         dict_time = {'seconds': 0, 'minutes': 0, 'hours': 0}
         int_xsize = int_ysize = 0
         time_left_color = "red"
@@ -300,6 +313,7 @@ class Countdowntimer:
             print("  [--color=<color>] [-c <color>] Color of time remaining")
             print("  [--clock_bg_color=<color>] Color not filled by timer when seconds <= 60")
             print("  [--help ]   Print Help (this message) and exit")
+            print("  [-d ] [--display-numeric]")
             print("  [-h <#>] [--hours=<#>]")
             print("  [-m <#>] [--minutes=<#>]")
             print("  [-s <#>] [--secondss=<#>]")
@@ -317,6 +331,8 @@ class Countdowntimer:
                 dict_time['minutes'] = float(arg)
             elif opt in ("-s", "--seconds"):
                 dict_time['seconds'] = float(arg)
+            elif opt in ("-d", "--display_numeric"):
+                display_numeric = True
             elif opt in ("-x", "--xsize"):
                 int_xsize = self.setup_size(arg)
             elif opt in ("-y", "--ysize"):
@@ -390,9 +406,10 @@ class Countdowntimer:
         self.clock_features['exiting'] = True
         self.root_window.update_idletasks()
         self.root_window.eval('::ttk::CancelRepeat')
-        self.root_window.quit()
+        #self.root_window.quit()
         self.root_window.destroy()
 
 if __name__ == "__main__":
     INSTA = Countdowntimer(sys.argv[1:])
+
     print("Program Ended Successfully.        ")
