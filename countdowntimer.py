@@ -41,8 +41,8 @@ class Countdowntimer:
 
         #Don't call self.root_window calls if in exiting mode
         if self.running and not self.clock_features['exiting']:
-          self.root_window.wait_window()
-          self.root_window.mainloop()
+            self.root_window.wait_window()
+            self.root_window.mainloop()
 
         if self.clock_features['terminal_beep'] == 1:
             for _ in range(1, 5):
@@ -166,9 +166,13 @@ class Countdowntimer:
 
         #DEBUG
         #print(f"running={self.running}:exiting={self.clock_features['exiting']}")
-        if self.timeleft > 0 and self.running == True and self.clock_features['exiting'] == False and self.root_window.winfo_exists() == 1:
+        if (self.timeleft > 0 and
+            self.running is True and
+            self.clock_features['exiting'] is False and
+            self.root_window.winfo_exists() == 1):
             #DEBUG
-            #print(f"exists={self.root_window.winfo_exists()}:running={self.running}:exiting={self.clock_features['exiting']}")
+            #print(f"exists={self.root_window.winfo_exists()}:running={self.running}")
+            #print(f"exiting={self.clock_features['exiting']}")
             var = tk.IntVar(self.root_window)
             self.root_window.after(mili_seconds, lambda: var.set(1))
             self.root_window.wait_variable(var)
@@ -368,7 +372,8 @@ class Countdowntimer:
                 'buttons': buttons,\
                 'dict_time': dict_time,\
                 'exiting': False, \
-                'console_only': console_only
+                'console_only': console_only, \
+                'display_numeric': display_numeric
                }
 
     def default_size_check(self, int_size, other_axis):
