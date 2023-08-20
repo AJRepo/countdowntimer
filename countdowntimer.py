@@ -411,8 +411,10 @@ class Countdowntimer:
         self.clock_features['exiting'] = True
         self.root_window.update_idletasks()
         self.root_window.eval('::ttk::CancelRepeat')
-        #self.root_window.quit()
-        self.root_window.destroy()
+        self.root_window.update_idletasks()
+        self.root_window.quit()
+        #don't use destroy
+        #self.root_window.destroy()
 
 if __name__ == "__main__":
     INSTA = Countdowntimer(sys.argv[1:])
