@@ -9,11 +9,12 @@ License: GPL 3. See LICENSE file.
 
 import time
 import tkinter as tk
-from tkinter import Tk, Label, Canvas, Button
+from tkinter import Tk, Label, Canvas, Button, Entry, Frame
 import sys
 import getopt
 
 
+# pylint: disable=too-many-instance-attributes
 class Countdowntimer:
     """Countdowntimer Class"""
     def __init__(self, sys_args):
@@ -53,6 +54,13 @@ class Countdowntimer:
         #print(self.clock_features['dict_time']['minutes'])
         #print("Program Exited Ok")
 
+    def display_time(self):
+        """Display current time"""
+        now = time.strftime('%H:%M:%S %p')
+        self.current_time.config(text=now)
+        self.current_time.after(1000,self.display_time)
+
+
     def setup_labels(self):
         """set the labels for the clock
         """
@@ -65,6 +73,7 @@ class Countdowntimer:
         self.widget_dict['widget_30'].config(text=top_label+30)
         self.widget_dict['widget_45'].config(text=top_label+45)
         #self.widget_dict['widget_center_time'].config(top_label)
+
 
     def print_m(self):
         """print minutes remaining
@@ -126,8 +135,19 @@ class Countdowntimer:
             this_clock_bg_color = self.clock_features['clock_bg_color']
 
         #set before sleep
+        xmid = self.clock_features['x_size']/2
+        ymid = self.clock_features['y_size']/2
         fraction_left = self.fraction_left()
         self.draw_pie(fraction_left, this_clock_bg_color)
+
+        #time left as text
+        #Entry(self.root_window, textvariable="",
+        #      width=2, bg="#000", fg="#fff", font="arial 25").place(x=xmid-50,y=ymid+30)
+        #Entry(self.root_window, textvariable="",
+        #      width=2, bg="#000", fg="#fff", font="arial 25").place(x=xmid,y=ymid+30)
+        #Entry(self.root_window, textvariable="",
+        #      width=2, bg="#000", fg="#fff", font="arial 25").place(x=xmid+50,y=ymid+30)
+
         #Don't use self.root_window.after(miliseconds) as we want to draw and THEN wait
         self.root_window.update()
 
@@ -244,14 +264,16 @@ class Countdowntimer:
         widget_c.grid(row=5, column=1)
         #add buttons/fields interface for changing times, start/stop
         if self.clock_features['buttons']:
-            widget_buttons = Button(self.root_window, text="Restart",
+            self.frame_buttons = Frame(self.root_window)
+            self.frame_buttons.grid(row=11, column=1, sticky='N', columnspan=3)
+            widget_buttons = Button(self.frame_buttons, text="Restart",
                                     command=self.restart)
-            widget_buttons.grid(row=7, column=0)
-            widget_pause_button = Button(self.root_window, text="Pause",
+            widget_buttons.grid(row=1, column=0)
+            widget_pause_button = Button(self.frame_buttons, text="Pause",
                                          command=self.toggle_running)
-            widget_pause_button.grid(row=7, column=1)
-            widget_buttons = Button(self.root_window, text="Adj. Time", command=lambda: quit)
-            widget_buttons.grid(row=7, column=3)
+            widget_pause_button.grid(row=1, column=1, sticky='N')
+            widget_buttons = Button(self.frame_buttons, text="Adj. Time", command=lambda: quit)
+            widget_buttons.grid(row=1, column=2, sticky='N')
         else:
             widget_pause_button = 'DISABLED'
 
@@ -269,6 +291,14 @@ class Countdowntimer:
                                  self.clock_features['y_size'],
                                  fill=self.clock_features['clock_bg_color'], tag="base")
 
+        #display current time
+        if self.clock_features['display_current_time']:
+            self.current_time=Label(self.root_window,
+                                    font=("arial",15,"bold"), text="", fg="#000", bg="#fff")
+            #self.current_time.place(x=(self.clock_features['x_size']/2 - 40),y=40)
+            self.current_time.grid(row=8, column=1)
+            self.display_time()
+
     def restart(self):
         """Reset timeleft variable"""
         self.set_start_seconds()
@@ -283,6 +313,7 @@ class Countdowntimer:
         else:
             self.running = True
 
+    # pylint: disable=too-many-locals
     def setup_args(self):
         """Setup parameters from command line"""
         # There are that many command line options (branches, statements)
@@ -295,6 +326,7 @@ class Countdowntimer:
         buttons = False
         console_only = False
         display_numeric = False
+        display_current_time = False
         dict_time = {'seconds': 0, 'minutes': 0, 'hours': 0}
         int_xsize = int_ysize = 0
         time_left_color = "red"
@@ -304,22 +336,23 @@ class Countdowntimer:
         opts = []
         try:
             opts, _ = getopt.getopt(self.args,
-                                    "btqh:m:s:x:y:c:",
+                                    "bntqh:m:s:x:y:c:",
                                     ["terminal_beep", "quiet", "hours=", "minutes=", "seconds=",
                                      "buttons", "xsize=", "ysize=", "color=", "clock_bg_color=",
-                                     "console_only", "term_ppm"]
+                                     "display_current_time", "console_only", "term_ppm"]
                                    )
         except getopt.GetoptError:
             print("Usage:\n countdowntimer.py [Arguments]\n")
             print("Arguments:")
             print("  [--buttons] [-b] Add buttons to control timer")
             print("  [--console_only] Only use the console - not graphical timer")
-            print("  [--color=<color>] [-c <color>] Color of time remaining")
+            print("  [-c <color>] [--color=<color>] Color of time remaining")
             print("  [--clock_bg_color=<color>] Color not filled by timer when seconds <= 60")
             print("  [--help ]   Print Help (this message) and exit")
-            print("  [-d ] [--display-numeric]")
+            print("  [-d ] [--display_numeric]")
             print("  [-h <#>] [--hours=<#>]")
             print("  [-m <#>] [--minutes=<#>]")
+            print("  [-n ] [--display_currrent_time]")
             print("  [-s <#>] [--secondss=<#>]")
             print("  [-q or --quiet]  Do not print time left in terminal")
             print("  [--term_ppm] Print to terminal time left each minute")
@@ -335,6 +368,8 @@ class Countdowntimer:
                 dict_time['minutes'] = float(arg)
             elif opt in ("-s", "--seconds"):
                 dict_time['seconds'] = float(arg)
+            elif opt in ("-n", "--display_current_time"):
+                display_current_time = True
             elif opt in ("-d", "--display_numeric"):
                 display_numeric = True
             elif opt in ("-x", "--xsize"):
@@ -373,7 +408,8 @@ class Countdowntimer:
                 'dict_time': dict_time,\
                 'exiting': False, \
                 'console_only': console_only, \
-                'display_numeric': display_numeric
+                'display_numeric': display_numeric, \
+                'display_current_time': display_current_time
                }
 
     def default_size_check(self, int_size, other_axis):
