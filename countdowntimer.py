@@ -6,13 +6,11 @@ be kept and aknowledgement sent to the author.
 License: GPL 3. See LICENSE file.
 """
 
-
 import time
 import tkinter as tk
-from tkinter import Tk, Label, Canvas, Button, Entry, Frame
+from tkinter import Tk, Label, Canvas, Button, Entry, Frame, StringVar
 import sys
 import getopt
-
 
 # pylint: disable=too-many-instance-attributes
 class Countdowntimer:
@@ -33,6 +31,12 @@ class Countdowntimer:
         self.setup_topwindow()
 
         self.clock_coord = (0, 0, self.clock_features['x_size'], self.clock_features['y_size'])
+
+        #time left as text
+
+        self.root_window.update()
+
+        #self.root_window.update()
 
         #Setup Clock pre-running of timer
         self.setup_labels()
@@ -101,6 +105,9 @@ class Countdowntimer:
                 if self.clock_features['quiet'] == 0:
                     self.console_print_time(seconds_left, last_seconds_left)
 
+                if self.clock_features['display_numeric']:
+                    self.gui_print_time(seconds_left)
+
                 self.sleep_time(seconds_left)
 
                 last_seconds_left = seconds_left
@@ -135,18 +142,8 @@ class Countdowntimer:
             this_clock_bg_color = self.clock_features['clock_bg_color']
 
         #set before sleep
-        xmid = self.clock_features['x_size']/2
-        ymid = self.clock_features['y_size']/2
         fraction_left = self.fraction_left()
         self.draw_pie(fraction_left, this_clock_bg_color)
-
-        #time left as text
-        #Entry(self.root_window, textvariable="",
-        #      width=2, bg="#000", fg="#fff", font="arial 25").place(x=xmid-50,y=ymid+30)
-        #Entry(self.root_window, textvariable="",
-        #      width=2, bg="#000", fg="#fff", font="arial 25").place(x=xmid,y=ymid+30)
-        #Entry(self.root_window, textvariable="",
-        #      width=2, bg="#000", fg="#fff", font="arial 25").place(x=xmid+50,y=ymid+30)
 
         #Don't use self.root_window.after(miliseconds) as we want to draw and THEN wait
         self.root_window.update()
@@ -177,6 +174,26 @@ class Countdowntimer:
 
     def gui_print_time(self, seconds_left):
         """Print to gui the time left"""
+        sec=StringVar(value=f'{seconds_left%60:02.0f}')
+        xmid = self.clock_features['x_size']/2
+        ymid = self.clock_features['y_size']/2
+
+        #print seconds
+        Entry(self.root_window, textvariable=sec,
+              width=2, bg="#fff", fg="#000",
+              font="arial 25", bd=0).place(x=xmid+50,y=ymid+30)
+
+        #print mins int() to round down
+        mins=StringVar(value=f'{(int(seconds_left/60))%60:02.0f}')
+        mins.set=("00")
+        Entry(self.root_window, textvariable=mins,
+              width=2, bg="#fff", fg="#000", font="arial 25", bd=0).place(x=xmid,y=ymid+30)
+
+        #print hrs, test different way to place
+        hrs=StringVar(value=f'{(int(seconds_left/3600))%24:02.0f}')
+        widget_hr = Entry(self.root_window, text="11", textvariable=hrs,
+              width=2, bg="#fff", fg="#000", font="arial 25", bd=0)
+        widget_hr.place(x=xmid-50,y=ymid+30)
 
     def tksleep(self, seconds):
         """Emulating self.tksleep(seconds)"""
@@ -202,12 +219,13 @@ class Countdowntimer:
         #percent red can be > 100% but it is normalized to 360 deg as an extent
         if self.timeleft > 60 and self.clock_features['term_ppm'] == 1:
             self.tksleep(.25)
-        elif self.timeleft > 305:
+        elif self.timeleft > 305 and not self.clock_features['display_numeric']:
             #update every 5 seconds if > 5 minutes 5 seconds to go
             if (5*round(seconds_left/5))%3600 <= 0:
                 self.setup_labels()
             self.tksleep(5)
-        elif 60 <= self.timeleft <= 305:
+        # if display_numeric is true then sleep = 1 second
+        elif 60 <= self.timeleft <= 305 and not self.clock_features['display_numeric']:
             self.tksleep(2)
         elif 5 <= self.timeleft <= 60:
             self.tksleep(.1)
@@ -336,10 +354,11 @@ class Countdowntimer:
         opts = []
         try:
             opts, _ = getopt.getopt(self.args,
-                                    "bntqh:m:s:x:y:c:",
+                                    "bdntqh:m:s:x:y:c:",
                                     ["terminal_beep", "quiet", "hours=", "minutes=", "seconds=",
                                      "buttons", "xsize=", "ysize=", "color=", "clock_bg_color=",
-                                     "display_current_time", "console_only", "term_ppm"]
+                                     "display_current_time", "console_only", "term_ppm",
+                                     "display_numeric"]
                                    )
         except getopt.GetoptError:
             print("Usage:\n countdowntimer.py [Arguments]\n")
