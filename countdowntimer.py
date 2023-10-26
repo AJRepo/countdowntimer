@@ -346,7 +346,7 @@ class Countdowntimer:
         display_numeric = False
         display_current_time = False
         dict_time = {'seconds': 0, 'minutes': 0, 'hours': 0}
-        int_xsize = int_ysize = 0
+        int_x_size = int_y_size = 0
         time_left_color = "red"
         clock_bg_color = "white"
         #If need args uncomment below and replace _ with args
@@ -356,7 +356,7 @@ class Countdowntimer:
             opts, _ = getopt.getopt(self.args,
                                     "bdntqh:m:s:x:y:c:",
                                     ["terminal_beep", "quiet", "hours=", "minutes=", "seconds=",
-                                     "buttons", "xsize=", "ysize=", "color=", "clock_bg_color=",
+                                     "buttons", "x_size=", "y_size=", "color=", "clock_bg_color=",
                                      "display_current_time", "console_only", "term_ppm",
                                      "display_numeric"]
                                    )
@@ -376,8 +376,8 @@ class Countdowntimer:
             print("  [-q or --quiet]  Do not print time left in terminal")
             print("  [--term_ppm] Print to terminal time left each minute")
             print("  [-t or --terminal_beep] Execute a beep at t=0")
-            print("  [-x <#xwidth>] [--xsize=<#xwidth>]")
-            print("  [-y <#yheight>] [--ysize=<#yheight>]")
+            print("  [-x <#xwidth>] [--x_size=<#xwidth>]")
+            print("  [-y <#yheight>] [--y_size=<#yheight>]")
             sys.exit(2)
 
         for opt, arg in opts:
@@ -391,10 +391,10 @@ class Countdowntimer:
                 display_current_time = True
             elif opt in ("-d", "--display_numeric"):
                 display_numeric = True
-            elif opt in ("-x", "--xsize"):
-                int_xsize = self.setup_size(arg)
-            elif opt in ("-y", "--ysize"):
-                int_ysize = self.setup_size(arg)
+            elif opt in ("-x", "--x_size"):
+                int_x_size = self.setup_size(arg)
+            elif opt in ("-y", "--y_size"):
+                int_y_size = self.setup_size(arg)
             elif opt == "--console_only":
                 console_only = True
             elif opt in ("-c", "--color"):
@@ -410,14 +410,14 @@ class Countdowntimer:
             elif opt in ("-b", "--buttons"):
                 buttons = True
 
-        int_ysize = self.default_size_check(int_ysize, int_xsize)
-        int_xsize = self.default_size_check(int_xsize, int_ysize)
+        int_y_size = self.default_size_check(int_y_size, int_x_size)
+        int_x_size = self.default_size_check(int_x_size, int_y_size)
 
         #Debugging
         #for opt, arg in opts:
         #    print(opt, arg)
 
-        return {'x_size': int_xsize, 'y_size': int_ysize,\
+        return {'x_size': int_x_size, 'y_size': int_y_size,\
                 'quiet': quiet,\
                 'term_ppm': term_ppm,\
                 'terminal_beep': terminal_beep,\
