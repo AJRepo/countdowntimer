@@ -102,7 +102,7 @@ class Countdowntimer:
                 if self.clock_features['console_only'] is not True:
                     self.draw_clock()
 
-                if self.clock_features['quiet'] == 0:
+                if self.clock_features['quiet'] is False:
                     self.console_print_time(rounded_seconds_left, last_seconds_left)
 
                 if self.clock_features['display_numeric']:
@@ -338,7 +338,7 @@ class Countdowntimer:
         #pylint: disable=too-many-branches
         #pylint: disable=too-many-statements
         #setup the defaults
-        quiet = 0
+        quiet = False
         term_ppm = 0
         terminal_beep = 0
         buttons = False
@@ -406,7 +406,7 @@ class Countdowntimer:
             elif opt in ("--term_ppm"):
                 term_ppm = 1
             elif opt in ("-q", "--quiet"):
-                quiet = 1
+                quiet = True
             elif opt in ("-b", "--buttons"):
                 buttons = True
 
@@ -474,4 +474,6 @@ class Countdowntimer:
 if __name__ == "__main__":
     INSTA = Countdowntimer(sys.argv[1:])
 
-    print("Program Ended Successfully.        ")
+    print(sys.argv[1:])
+    if "-q" not in sys.argv[1:] and "--quiet" not in sys.argv[1:]:
+        print("Program Ended Successfully.        ")
