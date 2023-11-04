@@ -17,7 +17,7 @@ class Countdowntimer:
     """Countdowntimer Class"""
     def __init__(self, sys_args):
         self.args = sys_args  #pass args to Class variable
-        self.timeleft = 0  #Not seconds left, could be microtime left
+        self.seconds_left = 0  #Could be fractions of a second
         self.running = True
 
         self.root_window = Tk()
@@ -70,7 +70,7 @@ class Countdowntimer:
         """
         #if self.running and self.widget_dict['widget_0'].winfo_exists():
         #if self.running and not self.clock_features['exiting']:
-        top_label = int(self.timeleft/3600)*60
+        top_label = int(self.seconds_left/3600)*60
         #in python int() always rounds down
         self.widget_dict['widget_0'].config(text=top_label)
         self.widget_dict['widget_15'].config(text=top_label+15)
@@ -82,39 +82,39 @@ class Countdowntimer:
     def print_m(self):
         """print minutes remaining
         """
-        print("Time Remaining = About " + str(round(self.timeleft/60, 0)) + " minutes       ",
+        print("Time Remaining = About " + str(round(self.seconds_left/60, 0)) + " minutes       ",
                end='\r')
 
     def runclock(self):
         """Run the countdown clock
         """
-        last_seconds_left = round(self.timeleft, 0)
+        last_seconds_left = round(self.seconds_left, 0)
         last_time = time.time()
 
         #not >= 0 because we don't want @0 to execute
-        while self.timeleft > 0 and not self.clock_features['exiting']:
+        while self.seconds_left > 0 and not self.clock_features['exiting']:
             if self.running:
                 this_time = time.time()
-                self.timeleft = self.timeleft - (this_time - last_time)
-                seconds_left = round(self.timeleft, 0)
+                self.seconds_left = self.seconds_left - (this_time - last_time)
+                rounded_seconds_left = round(self.seconds_left, 0)
 
                 #draw clock functions
                 if self.clock_features['console_only'] is not True:
                     self.draw_clock()
 
                 if self.clock_features['quiet'] == 0:
-                    self.console_print_time(seconds_left, last_seconds_left)
+                    self.console_print_time(rounded_seconds_left, last_seconds_left)
 
                 if self.clock_features['display_numeric']:
-                    self.gui_print_time(seconds_left)
+                    self.gui_print_time(rounded_seconds_left)
 
-                self.sleep_time(seconds_left)
+                self.sleep_time(rounded_seconds_left)
 
-                last_seconds_left = seconds_left
+                last_seconds_left = rounded_seconds_left
                 last_time = this_time
-                #print("DEBUG 10: Seconds remaining =" + str(seconds_left))
+                #print("DEBUG 10: Seconds remaining =" + str(rounded_seconds_left))
             else:
-                #print("DEBUG 20: remaining =" + str(seconds_left))
+                #print("DEBUG 20: remaining =" + str(rounded_seconds_left))
                 self.root_window.update()
                 self.tksleep(.001)
                 this_time = last_time = time.time()
@@ -128,7 +128,7 @@ class Countdowntimer:
 
         self.root_window.update()
         #at t=0 set to an all clock_bg_color circle
-        if self.timeleft <= 0:
+        if self.seconds_left <= 0:
             self.widget_dict['widget_c'].create_oval(self.clock_coord,
                                                      fill=self.clock_features['clock_bg_color'])
             self.root_window.update()
@@ -136,7 +136,7 @@ class Countdowntimer:
 
     def draw_time_left(self):
         """draw the countdown clock wedge"""
-        if self.timeleft > 3599:
+        if self.seconds_left > 3599:
             this_clock_bg_color = "orange"
         else:
             this_clock_bg_color = self.clock_features['clock_bg_color']
@@ -148,33 +148,33 @@ class Countdowntimer:
         #Don't use self.root_window.after(miliseconds) as we want to draw and THEN wait
         self.root_window.update()
 
-    def console_print_time(self, seconds_left, last_seconds_left):
+    def console_print_time(self, rounded_seconds_left, last_seconds_left):
         """Print to terminal depending on how much time is remaining"""
-        if self.timeleft > 305 and (5*round(seconds_left/5))%3600 <= 0:
+        if self.seconds_left > 305 and (5*round(rounded_seconds_left/5))%3600 <= 0:
             #print every hour
             self.print_m()
-        elif ((self.timeleft > 300) and (seconds_left%300 == 0)):
+        elif ((self.seconds_left > 300) and (rounded_seconds_left%300 == 0)):
             #print every five min
             self.print_m()
-        elif ((self.timeleft > 300) and (seconds_left%60 == 0) and \
+        elif ((self.seconds_left > 300) and (rounded_seconds_left%60 == 0) and \
                self.clock_features['term_ppm'] ==1):
             #print every min if promoted
             self.print_m()
-        elif 60 <= self.timeleft < 301 and seconds_left%60 == 0:
+        elif 60 <= self.seconds_left < 301 and rounded_seconds_left%60 == 0:
             #print every min under 5 min
             self.print_m()
-        elif 5 <= self.timeleft <= 60:
+        elif 5 <= self.seconds_left <= 60:
             #print every 5 seconds for 5 < t < 60
-            if last_seconds_left != seconds_left and seconds_left%5 == 0:
-                print("Time remaining = " + str(seconds_left) + " seconds      ", end='\r')
-        elif self.timeleft < 5:
+            if last_seconds_left != rounded_seconds_left and rounded_seconds_left%5 == 0:
+                print("Time remaining = " + str(rounded_seconds_left) + " seconds      ", end='\r')
+        elif self.seconds_left < 5:
             #print every second under 5 seconds
-            if last_seconds_left != seconds_left:
-                print("Time remaining = " + str(seconds_left) + " seconds      ", end='\r')
+            if last_seconds_left != rounded_seconds_left:
+                print("Time remaining = " + str(rounded_seconds_left) + " seconds      ", end='\r')
 
-    def gui_print_time(self, seconds_left):
+    def gui_print_time(self, rounded_seconds_left):
         """Print to gui the time left"""
-        sec=StringVar(value=f'{seconds_left%60:02.0f}')
+        sec=StringVar(value=f'{rounded_seconds_left%60:02.0f}')
         xmid = self.clock_features['x_size']/2
         ymid = self.clock_features['y_size']/2
 
@@ -184,13 +184,13 @@ class Countdowntimer:
               font="arial 25", bd=0).place(x=xmid+50,y=ymid+30)
 
         #print mins int() to round down
-        mins=StringVar(value=f'{(int(seconds_left/60))%60:02.0f}')
+        mins=StringVar(value=f'{(int(rounded_seconds_left/60))%60:02.0f}')
         mins.set=("00")
         Entry(self.root_window, textvariable=mins,
               width=2, bg="#fff", fg="#000", font="arial 25", bd=0).place(x=xmid,y=ymid+30)
 
         #print hrs, test different way to place
-        hrs=StringVar(value=f'{(int(seconds_left/3600))%24:02.0f}')
+        hrs=StringVar(value=f'{(int(rounded_seconds_left/3600))%24:02.0f}')
         widget_hr = Entry(self.root_window, text="11", textvariable=hrs,
               width=2, bg="#fff", fg="#000", font="arial 25", bd=0)
         widget_hr.place(x=xmid-50,y=ymid+30)
@@ -198,12 +198,12 @@ class Countdowntimer:
     def tksleep(self, seconds):
         """Emulating self.tksleep(seconds)"""
         mili_seconds = int(seconds*1000)
-        #print(f"WAITING {ms} Miliseconds and {self.timeleft}")
+        #print(f"WAITING {ms} Miliseconds and {self.seconds_left}")
         #Don't call this after the window has been destroyed!
 
         #DEBUG
         #print(f"running={self.running}:exiting={self.clock_features['exiting']}")
-        if (self.timeleft > 0 and
+        if (self.seconds_left > 0 and
             self.running is True and
             self.clock_features['exiting'] is False and
             self.root_window.winfo_exists() == 1):
@@ -214,34 +214,34 @@ class Countdowntimer:
             self.root_window.after(mili_seconds, lambda: var.set(1))
             self.root_window.wait_variable(var)
 
-    def sleep_time(self, seconds_left):
+    def sleep_time(self, rounded_seconds_left):
         """Determine the time to slep based on how much time is remaining"""
         #percent red can be > 100% but it is normalized to 360 deg as an extent
-        if self.timeleft > 60 and self.clock_features['term_ppm'] == 1:
+        if self.seconds_left > 60 and self.clock_features['term_ppm'] == 1:
             self.tksleep(.25)
-        elif self.timeleft > 305 and not self.clock_features['display_numeric']:
+        elif self.seconds_left > 305 and not self.clock_features['display_numeric']:
             #update every 5 seconds if > 5 minutes 5 seconds to go
-            if (5*round(seconds_left/5))%3600 <= 0:
+            if (5*round(rounded_seconds_left/5))%3600 <= 0:
                 self.setup_labels()
             self.tksleep(5)
         # if display_numeric is true then sleep = 1 second
-        elif 60 <= self.timeleft <= 305 and not self.clock_features['display_numeric']:
+        elif 60 <= self.seconds_left <= 305 and not self.clock_features['display_numeric']:
             self.tksleep(2)
-        elif 5 <= self.timeleft <= 60:
+        elif 5 <= self.seconds_left <= 60:
             self.tksleep(.1)
-        elif self.timeleft < 5:
+        elif self.seconds_left < 5:
             self.tksleep(.05)
         else:
-            #print("DEBUG2: Seconds remaining =" + str(self.timeleft))
+            #print("DEBUG2: Seconds remaining =" + str(self.seconds_left))
             self.tksleep(1)
 
 
     def fraction_left(self):
         """Calculate fraction of clock to display as time left"""
-        if self.timeleft <= 60:
-            fraction_left = self.timeleft/60
+        if self.seconds_left <= 60:
+            fraction_left = self.seconds_left/60
         else:
-            fraction_left = (self.timeleft%3600)/3600
+            fraction_left = (self.seconds_left%3600)/3600
         return fraction_left
 
     def draw_pie(self, fraction_left, this_clock_bg_color):
@@ -455,7 +455,7 @@ class Countdowntimer:
            self.clock_features['dict_time']['minutes'] == 0 and \
            self.clock_features['dict_time']['seconds'] == 0:
             self.clock_features['dict_time']['minutes'] = 15
-        self.timeleft = self.clock_features['dict_time']['hours']*3600 + \
+        self.seconds_left = self.clock_features['dict_time']['hours']*3600 + \
                         self.clock_features['dict_time']['minutes']*60 + \
                         self.clock_features['dict_time']['seconds']
 
