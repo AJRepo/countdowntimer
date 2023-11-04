@@ -185,7 +185,7 @@ class Countdowntimer:
 
         #print mins int() to round down
         mins=StringVar(value=f'{(int(rounded_seconds_left/60))%60:02.0f}')
-        mins.set=("00")
+        mins.set="00"
         Entry(self.root_window, textvariable=mins,
               width=2, bg="#fff", fg="#000", font="arial 25", bd=0).place(x=xmid,y=ymid+30)
 
