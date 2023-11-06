@@ -474,6 +474,6 @@ class Countdowntimer:
 if __name__ == "__main__":
     INSTA = Countdowntimer(sys.argv[1:])
 
-    print(sys.argv[1:])
+    #print("DEBUG: In __main__: sys.arrv= ", sys.argv[1:])
     if "-q" not in sys.argv[1:] and "--quiet" not in sys.argv[1:]:
         print("Program Ended Successfully.        ")
